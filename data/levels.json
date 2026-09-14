@@ -28,6 +28,19 @@
         "flat",
         "finish"
       ]
+    },
+    {
+      "name": "Level 3 - Highrise",
+      "pieces": [
+        "start",
+        "spikes",
+        "step",
+        "stairs",
+        "highflat",
+        "highspike",
+        "highplat",
+        "finish"
+      ]
     }
   ]
 }

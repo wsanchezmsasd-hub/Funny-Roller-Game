@@ -11,7 +11,7 @@ var Collide = {};
 
 // Which grid squares does this box overlap?
 // Returns a list of { col: , row: } objects.
-Collide.squaresUnder = function (x, y, width, height) {
+Collide.squaresUnder = function (x, y, width, height) { 
   var firstCol = Math.floor(x / CONFIG.TILE);
   var lastCol  = Math.floor((x + width  - 1) / CONFIG.TILE);
   var firstRow = Math.floor(y / CONFIG.TILE);

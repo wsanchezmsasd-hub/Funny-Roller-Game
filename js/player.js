@@ -21,7 +21,7 @@ Player.reset = function () {
   Player.x = Level.startX;
   Player.y = Level.startY;
   Player.vx = 0;
-  Player.vy = 0;
+  Player.vy = 0; 
   Player.onGround = false;
   Player.angle = 0;
 };
@@ -36,17 +36,19 @@ Player.update = function () {
   if (Input.right) { Player.vx =  Player.vx+CONFIG.MOVE_SPEED; }
   if (Player.vx > 3.5) { Player.vx = 3.5; }
   if (Player.vx < -3.5) { Player.vx = -3.5 }
-  // --- 2. jump, but only if we are standing on something --------------
+   // --- 2. Slow down over time
+   Player.vx = Player.vx * 0.95
+  // --- 3. jump, but only if we are standing on something --------------
   if (Input.jump && Player.onGround) {
     Player.vy = -CONFIG.JUMP_POWER;   // negative is UP
     Player.onGround = false;
   }
 
-  // --- 3. gravity pulls down every single frame -----------------------
+  // --- 4. gravity pulls down every single frame -----------------------
   Player.vy = Player.vy + CONFIG.GRAVITY;
   if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
 
-  // --- 4. move sideways, one pixel at a time, stopping at walls -------
+  // --- 5. move sideways, one pixel at a time, stopping at walls -------
   var stepX = 0;
   if (Player.vx > 0) { stepX = 1; }
   if (Player.vx < 0) { stepX = -1; }
@@ -57,7 +59,7 @@ Player.update = function () {
     Player.angle = Player.angle + stepX / CONFIG.PLAYER_RADIUS; // roll it
   }
 
-  // --- 5. move up or down, one pixel at a time ------------------------
+  // --- 6. move up or down, one pixel at a time ------------------------
   var stepY = 0;
   if (Player.vy > 0) { stepY = 1; }
   if (Player.vy < 0) { stepY = -1; }
@@ -73,7 +75,7 @@ Player.update = function () {
     Player.y = Player.y + stepY;
   }
 
-  // --- 6. keep the player inside the left edge of the world -----------
+  // --- 7. keep the player inside the left edge of the world -----------
   if (Player.x < 0) { Player.x = 0; }
 };
 

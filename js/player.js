@@ -31,8 +31,8 @@ Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
 
   // --- 1. decide how fast to go sideways ------------------------------
-  if (Input.left)  { Player.vx = Player.vx-CONFIG.MOVE_SPEED; }
-  if (Input.right) { Player.vx =  Player.vx+CONFIG.MOVE_SPEED; }
+  if (Input.left)  { Player.vx = Player.vx-CONFIG.MOVE_VELOCITY; }
+  if (Input.right) { Player.vx =  Player.vx+CONFIG.MOVE_VELOCITY; }
   if (Player.vx > 3.5) { Player.vx = 3.5; }
   if (Player.vx < -3.5) { Player.vx = -3.5 }
    // --- 2. Slow down over time

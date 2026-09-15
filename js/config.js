@@ -18,7 +18,7 @@ var CONFIG = {
   CANVAS_H: 400,
 
   // --- how the player moves -------------------------------------------
-  MOVE_VELOCITY: 0,   // velocity per frame left and right
+  MOVE_VELOCITY: 0.5,   // velocity per frame left and right
   MAX_VELOCITY: 8.5,  // How fast the player can move
   MOVE_FRICTION: 0.75,//how the much the player slows down
   JUMP_POWER: 10,     // how hard the jump pushes UP. bigger = higher

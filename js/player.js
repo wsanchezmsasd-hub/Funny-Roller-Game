@@ -32,9 +32,10 @@ Player.update = function () {
 
   // --- 1. decide how fast to go sideways ------------------------------
   Player.vx = 0;
-  if (Input.left)  { Player.vx = -CONFIG.MOVE_SPEED; }
-  if (Input.right) { Player.vx =  CONFIG.MOVE_SPEED; }
-
+  if (Input.left)  { Player.vx = Player.vx-CONFIG.MOVE_SPEED; }
+  if (Input.right) { Player.vx =  Player.vx+CONFIG.MOVE_SPEED; }
+  if (Player.vx > 3.5) { Player.vx = 3.5; }
+  if (Player.vx < -3.5) { Player.vx = -3.5 }
   // --- 2. jump, but only if we are standing on something --------------
   if (Input.jump && Player.onGround) {
     Player.vy = -CONFIG.JUMP_POWER;   // negative is UP

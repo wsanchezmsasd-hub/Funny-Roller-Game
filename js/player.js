@@ -36,7 +36,7 @@ Player.update = function () {
   if (Player.vx > 3.5) { Player.vx = 3.5; }
   if (Player.vx < -3.5) { Player.vx = -3.5 }
    // --- 2. Slow down over time
-   Player.vx = Player.vx * 0.95
+   Player.vx = Player.vx * 0.75
   // --- 3. jump, but only if we are standing on something --------------
   if (Input.jump && Player.onGround) {
     Player.vy = -CONFIG.JUMP_POWER;   // negative is UP

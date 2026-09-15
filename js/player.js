@@ -31,13 +31,13 @@ Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
 
   // --- 1. decide how fast to go sideways ------------------------------
-  if (Input.left)  { Player.vx = Player.vx-CONFIG.MOVE_VELOCITY; }
-  if (Input.right) { Player.vx =  Player.vx+CONFIG.MOVE_VELOCITY; }
-  if (Player.vx > CONFIG.MAX_VELOCITY) { Player.vx = CONFIG.MAX_VELOCITY; }
-  if (Player.vx < -CONFIG.MAX_VELOCITY) { Player.vx = -CONFIG.MAX_VELOCITY; }
+  if (Input.left)  { Player.vx = Player.vx-CONFIG.MOVE_SPEED; }
+  if (Input.right) { Player.vx =  Player.vx+CONFIG.MOVE_SPEED; }
+  if (Player.vx > 3.5) { Player.vx = 3.5; }
+  if (Player.vx < -3.5) { Player.vx = -3.5 }
    // --- 2. Slow down over time
-   Player.vx = Player.vx * CONFIG.MOVE_FRICTION;
-   // --- 3. jump, but only if we are standing on something --------------
+   Player.vx = Player.vx * 0.95
+  // --- 3. jump, but only if we are standing on something --------------
   if (Input.jump && Player.onGround) {
     Player.vy = -CONFIG.JUMP_POWER;   // negative is UP
     Player.onGround = false;

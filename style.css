@@ -4,8 +4,8 @@
    ===================================================================== */
 
 body {
-  background: #ffffff;
-  color: #000000;
+  background: #000000;
+  color: #ff0000;
   font-family: monospace;
   text-align: center;
   margin: 24px;
@@ -18,8 +18,8 @@ h1 {
 }
 
 canvas {
-  border: 3px solid #000000;
-  background: #ffffff;
+  border: 3px solid #ff0000;
+  background: #000000;
   display: block;
   margin: 0 auto;
 }

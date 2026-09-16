@@ -40,7 +40,7 @@ Player.update = function () {
   if (Input.right) { Player.vx = Player.vx + CONFIG.MOVE_SPEED; } //speed up right
 
   if (Player.vx > 8) { Player.vx = 8; }
-  if (Player.vx < -8 { Player.vx = -8; }
+  if (Player.vx < -8) { Player.vx = -8; }
 
   // --- 2. jump, but only if we are standing on something --------------
   if (Input.jump && Player.onGround) {

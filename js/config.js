@@ -18,7 +18,7 @@ var CONFIG = {
   CANVAS_H: 400,
 
   // --- how the player moves -------------------------------------------
-  MOVE_SPEED: 0.25,      // pixels per frame left and right
+  MOVE_SPEED: 0.2,      // pixels per frame left and right
   JUMP_POWER: 15,     // how hard the jump pushes UP. bigger = higher
   GRAVITY: 0.5,       // how hard the world pulls DOWN. bigger = heavier
   MAX_FALL: 16,       // fastest the player is allowed to fall
@@ -33,5 +33,5 @@ var CONFIG = {
                       // 0 = dead center, 1 = right on the edge
 
   // --- rules ----------------------------------------------------------
-  START_LEVEL: 2      // which level in data/levels.json to load first
+  START_LEVEL: 4      // which level in data/levels.json to load first
 };

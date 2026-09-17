@@ -41,6 +41,20 @@
         "highplat",
         "finish"
       ]
+    },
+      "name": "Level 4 - Floorless",
+      "pieces": [
+        "start",
+        "platform",
+        "manygap",
+        "stairs",
+        "Nofloorplat",
+        "Nofloorplat2",
+        "Nofloorplat3",
+        "Nofloorplat4",
+        "Nofloorplat5",
+        "finish"
+      ]
     }
   ]
 }

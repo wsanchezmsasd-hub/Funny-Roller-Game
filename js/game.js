@@ -1,12 +1,5 @@
 /* =====================================================================
    game.js  --  THE RULES AND THE LOOP.
-
-   The game is always in exactly ONE mode: "playing", "dead", or "won".
-   Which mode it is in decides what happens each frame.
-
-   The loop runs about 60 times a second, forever. Every time it runs it
-   does the same two things: UPDATE (change the numbers) and DRAW (show
-   the numbers).
    ===================================================================== */
 
 var Game = {
@@ -19,7 +12,20 @@ Game.startLevel = function (levelNumber) {
   Level.build(levelNumber);
   Player.reset();
   Game.mode = "playing";
-  Game.showMessage("");
+  Game.showMessage("Level " + (levelNumber + 1));
+};
+
+Game.nextLevel = function () {
+  var nextLevel = Game.levelNumber + 1;
+
+  if (nextLevel < Level.levels.length) {
+    Game.startLevel(nextLevel);
+    return;
+  }
+
+  // final level: keep the win state
+  Game.mode = "won";
+  Game.showMessage("You beat every level! Press R to try again.");
 };
 
 Game.showMessage = function (text) {
@@ -28,14 +34,11 @@ Game.showMessage = function (text) {
 
 // --- ONE FRAME --------------------------------------------------------
 Game.update = function () {
-
-  // R always restarts, no matter what mode we are in.
   if (Input.restart) {
     Game.startLevel(Game.levelNumber);
     return;
   }
 
-  // If we are not playing, nothing moves. We just wait for R.
   if (Game.mode !== "playing") { return; }
 
   Player.update();
@@ -47,8 +50,7 @@ Game.update = function () {
   }
 
   if (Player.hasWon()) {
-    Game.mode = "won";
-    Game.showMessage("You made it. Press R to play again.");
+    Game.nextLevel();
     return;
   }
 };

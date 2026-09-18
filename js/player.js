@@ -35,7 +35,7 @@ Player.update = function () {
   var size = CONFIG.PLAYER_SIZE;
 
   // --- 1. decide how fast to go sideways ------------------------------
-  Player.vx = Player.vx * 0.95; // friction
+  if (!Input.left && !Input.right) {Player.vx = Player.vx * 0.85;} // friction
   if (Input.left)  { Player.vx = Player.vx - CONFIG.MOVE_SPEED; } // speed up left
   if (Input.right) { Player.vx = Player.vx + CONFIG.MOVE_SPEED; } // speed up right
 

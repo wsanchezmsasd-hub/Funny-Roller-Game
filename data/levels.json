@@ -22,7 +22,7 @@
         "spikes",
         "gap",
         "step",
-        "spikepit",
+        "spikehill",
         "platform",
         "gap",
         "flat",
@@ -34,11 +34,12 @@
       "pieces": [
         "start",
         "spikes",
-        "step",
+        "spikehill",
         "stairs",
         "highflat",
         "highspike",
         "highplat",
+        "spikepit",
         "finish"
       ]
     },

@@ -4,10 +4,11 @@
 var Game = { mode: "playing", levelNumber: 0, nextEnemy: null };
 
 Game.startLevel = function (levelNumber, enemyType) {
+  var resetRoster = levelNumber === CONFIG.START_LEVEL && !enemyType;
   Game.levelNumber = levelNumber;
   Level.build(levelNumber);
   Player.reset();
-  Enemy.reset(enemyType);
+  Enemy.reset(enemyType, resetRoster);
   Game.mode = "playing";
   Game.showMessage("Level " + (levelNumber + 1));
 };
@@ -37,11 +38,22 @@ Game.showEnemyChoice = function (nextLevel) {
 Game.showMessage = function (text) { document.getElementById("message").textContent = text; };
 
 Game.update = function () {
-  if (Input.restart) { document.getElementById("enemy-choice").hidden = true; Game.startLevel(Game.levelNumber); return; }
+  if (Input.restart) {
+    document.getElementById("enemy-choice").hidden = true;
+    Game.startLevel(CONFIG.START_LEVEL);
+    return;
+  }
   if (Game.mode !== "playing") { return; }
   Player.update();
   Enemy.update();
-  if (Player.isDead() || Enemy.hitsPlayer()) { Game.mode = "dead"; Game.showMessage("You hit something. Press R to try again."); return; }
+  if (Player.isDead() || Enemy.hitsPlayer()) {
+    // Leave the current enemy objects on screen while the death message is shown.
+    // The next restart deliberately returns to level 0 and clears the roster.
+    Game.levelNumber = CONFIG.START_LEVEL;
+    Game.mode = "dead";
+    Game.showMessage("You hit something. Press R to return to level 0.");
+    return;
+  }
   if (Player.hasWon()) { Game.nextLevel(); }
 };
 

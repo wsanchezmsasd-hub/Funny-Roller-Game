@@ -3,89 +3,116 @@
    ===================================================================== */
 var Enemy = {
   type: null,
+  types: [],
   enemies: [],
   bullets: [],
   choices: [
-    { type: "cuobid", name: "Cuobid", description: "A 3D cube that slowly follows you through walls." },
-    { type: "drone", name: "Drone", description: "Flies above you, stops, and fires three fast bullets." },
-    { type: "evilSpike", name: "More evil spike", description: "Dashes in a straight line toward you." },
-    { type: "greenBall4", name: "Green ball 4", description: "Four bouncy green balls roll toward you." }
+    { type: "cuboid", name: "Cuboid", description: "A group of cubes that follows you through walls and can combine." },
+    { type: "drone", name: "Drone", description: "Flies above you and fires while it moves." },
+    { type: "drill", name: "Drill", description: "Warns you with a line, then dashes in a straight line toward you." },
+    { type: "greenBall4", name: "Green ball 4", description: "Four bouncy green balls roll and jump toward you." }
   ]
 };
 
-Enemy.reset = function (type) {
-  Enemy.type = type || null;
+Enemy.isType = function (type, wanted) {
+  return type === wanted || (wanted === "cuboid" && type === "cuobid") || (wanted === "drill" && type === "evilSpike");
+};
+
+Enemy.resetRoster = function () { Enemy.types = []; Enemy.type = null; };
+
+Enemy.reset = function (type, resetRoster) {
+  if (resetRoster) { Enemy.resetRoster(); }
+  if (type && Enemy.types.indexOf(type) < 0) { Enemy.types.push(type); }
+  Enemy.type = Enemy.types.length === 1 ? Enemy.types[0] : (Enemy.types.length ? "mixed" : null);
   Enemy.enemies = [];
   Enemy.bullets = [];
-  if (!Enemy.type) { return; }
+  if (!Enemy.types.length) { return; }
 
-  var x = Math.min(Math.max(Player.x + CONFIG.ENEMY_START_DISTANCE, CONFIG.CANVAS_W), Level.pixelWidth() - 80);
-  var y = Math.max(0, Player.y - CONFIG.ENEMY_SPAWN_HEIGHT);
-  var radius = Enemy.type === "greenBall4" ? CONFIG.GREEN_BALL_SIZE / 2 :
-    (Enemy.type === "cuobid" ? CONFIG.CUOBID_SIZE / 2 : CONFIG.EVIL_SPIKE_SIZE / 2);
+  for (var t = 0; t < Enemy.types.length; t++) {
+    var enemyType = Enemy.types[t];
+    var x = Math.min(Math.max(Player.x + CONFIG.ENEMY_START_DISTANCE + t * 45, CONFIG.CANVAS_W), Level.pixelWidth() - 80);
+    var y = Math.max(0, Player.y - CONFIG.ENEMY_SPAWN_HEIGHT);
+    Enemy.spawnType(enemyType, x, y);
+  }
+};
 
-  if (Enemy.type === "greenBall4") {
+Enemy.spawnType = function (type, x, y) {
+  if (Enemy.isType(type, "greenBall4")) {
+    var radius = CONFIG.GREEN_BALL_SIZE / 2;
     for (var i = 0; i < CONFIG.GREEN_BALL_COUNT; i++) {
-      Enemy.enemies.push({ x: x + i * 42, y: y - i * 24, vx: 0, vy: 0, radius: radius, angle: 0 });
+      Enemy.enemies.push({ type: "greenBall4", x: x + i * 42, y: y - i * 24, vx: 0, vy: 0,
+        radius: radius, angle: 0, jumpTimer: 60 + Math.floor(Math.random() * 61), grounded: false });
+    }
+  } else if (Enemy.isType(type, "cuboid")) {
+    for (var j = 0; j < CONFIG.CUOBID_GROUP_SIZE; j++) {
+      Enemy.enemies.push({ type: "cuboid", x: x + j * 30, y: y - (j % 2) * 28, vx: 0, vy: 0,
+        radius: CONFIG.CUOBID_SIZE / 2, angle: 0 });
     }
   } else {
-    Enemy.enemies.push({ x: x, y: y, vx: 0, vy: 0, state: "approach", timer: 0, radius: radius, angle: 0 });
+    var actualType = Enemy.isType(type, "drill") ? "drill" : type;
+    var size = actualType === "drone" ? CONFIG.CUOBID_SIZE / 2 : CONFIG.EVIL_SPIKE_SIZE / 2;
+    Enemy.enemies.push({ type: actualType, x: x, y: y, vx: 0, vy: 0, state: "approach",
+      timer: 0, shotTimer: 0, radius: size, angle: 0 });
   }
 };
 
 Enemy.randomChoices = function () {
-  var pool = Enemy.choices.slice();
+  var pool = Enemy.choices.filter(function (choice) { return Enemy.types.indexOf(choice.type) < 0; });
   var result = [];
-  while (result.length < 3 && pool.length) {
-    result.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-  }
+  while (result.length < 3 && pool.length) { result.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); }
   return result;
 };
 
 Enemy.update = function () {
-  if (!Enemy.type) { return; }
-  if (Enemy.type === "cuobid") { Enemy.updateCuobid(); }
-  if (Enemy.type === "drone") { Enemy.updateDrone(); }
-  if (Enemy.type === "evilSpike") { Enemy.updateEvilSpike(); }
-  if (Enemy.type === "greenBall4") { Enemy.updateGreenBalls(); }
+  if (!Enemy.types.length) { return; }
+  for (var i = 0; i < Enemy.enemies.length; i++) {
+    var e = Enemy.enemies[i];
+    if (e.type === "cuboid") { Enemy.updateCuboid(e); }
+    if (e.type === "drone") { Enemy.updateDrone(e); }
+    if (e.type === "drill") { Enemy.updateDrill(e); }
+    if (e.type === "greenBall4") { Enemy.updateGreenBall(e); }
+  }
+  Enemy.tryCombineCuboids();
   Enemy.updateBullets();
 };
 
-Enemy.updateCuobid = function () {
-  var e = Enemy.enemies[0], dx = Player.x - e.x, dy = Player.y - e.y;
-  var distance = Math.sqrt(dx * dx + dy * dy) || 1;
-  e.x += dx / distance * CONFIG.CUOBID_SPEED;
-  e.y += dy / distance * CONFIG.CUOBID_SPEED;
-  e.angle += 0.025;
+Enemy.updateCuboid = function (e) {
+  var dx = Player.x - e.x, dy = Player.y - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1;
+  var speed = Math.min(CONFIG.CUOBID_MAX_SPEED, CONFIG.CUOBID_SPEED + distance * CONFIG.CUOBID_DISTANCE_SPEED);
+  e.x += dx / distance * speed; e.y += dy / distance * speed; e.angle += 0.025;
 };
 
-Enemy.updateDrone = function () {
-  var e = Enemy.enemies[0];
+Enemy.tryCombineCuboids = function () {
+  var cuboids = Enemy.enemies.filter(function (e) { return e.type === "cuboid"; });
+  if (cuboids.length < CONFIG.CUOBID_GROUP_SIZE) { return; }
+  var cx = 0, cy = 0;
+  cuboids.forEach(function (e) { cx += e.x; cy += e.y; });
+  cx /= cuboids.length; cy /= cuboids.length;
+  var close = cuboids.every(function (e) { return Math.hypot(e.x - cx, e.y - cy) < CONFIG.CUOBID_MERGE_DISTANCE; });
+  if (!close) { return; }
+  Enemy.enemies = Enemy.enemies.filter(function (e) { return e.type !== "cuboid"; });
+  Enemy.enemies.push({ type: "cuboid", x: cx, y: cy, vx: 0, vy: 0,
+    radius: CONFIG.CUOBID_SIZE / 2 * Math.sqrt(cuboids.length), angle: 0, combined: true });
+};
+
+Enemy.updateDrone = function (e) {
   e.timer++;
-  if (e.state === "approach") {
-    e.x += (Player.x - e.x) * CONFIG.DRONE_FOLLOW_RATE;
-    e.y += (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER - e.y) * CONFIG.DRONE_FOLLOW_RATE;
-    if (Math.abs(e.x - Player.x) < 12 && Math.abs(e.y - (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER)) < 12) {
-      e.state = "fire"; e.timer = 0;
-    }
-  } else if (e.state === "fire") {
-    if (e.timer === 1 || e.timer === 1 + CONFIG.DRONE_SHOT_INTERVAL || e.timer === 1 + CONFIG.DRONE_SHOT_INTERVAL * 2) {
-      var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x;
-      var dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y;
-      var distance = Math.sqrt(dx * dx + dy * dy) || 1;
-      Enemy.bullets.push({ x: e.x, y: e.y, vx: dx / distance * CONFIG.DRONE_BULLET_SPEED, vy: dy / distance * CONFIG.DRONE_BULLET_SPEED, life: CONFIG.DRONE_BULLET_LIFE });
-    }
-    if (e.timer > CONFIG.DRONE_FIRE_TIME) { e.state = "approach"; e.timer = 0; }
+  e.x += (Player.x - e.x) * CONFIG.DRONE_FOLLOW_RATE;
+  e.y += (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER - e.y) * CONFIG.DRONE_FOLLOW_RATE;
+  e.shotTimer--;
+  if (e.shotTimer <= 0) {
+    var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x, dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y;
+    var distance = Math.sqrt(dx * dx + dy * dy) || 1;
+    Enemy.bullets.push({ x: e.x, y: e.y, vx: dx / distance * CONFIG.DRONE_BULLET_SPEED, vy: dy / distance * CONFIG.DRONE_BULLET_SPEED, life: CONFIG.DRONE_BULLET_LIFE });
+    e.shotTimer = CONFIG.DRONE_SHOT_INTERVAL;
   }
 };
 
-Enemy.updateEvilSpike = function () {
-  var e = Enemy.enemies[0];
+Enemy.updateDrill = function (e) {
   e.timer++;
   if (e.state === "approach" && e.timer > CONFIG.EVIL_SPIKE_WARNING_TIME) {
     var dx = Player.x - e.x, dy = Player.y - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1;
-    e.vx = dx / distance * CONFIG.EVIL_SPIKE_DASH_SPEED;
-    e.vy = dy / distance * CONFIG.EVIL_SPIKE_DASH_SPEED;
+    e.vx = dx / distance * CONFIG.EVIL_SPIKE_DASH_SPEED; e.vy = dy / distance * CONFIG.EVIL_SPIKE_DASH_SPEED;
     e.state = "dash"; e.timer = 0;
   }
   if (e.state === "dash") {
@@ -94,20 +121,21 @@ Enemy.updateEvilSpike = function () {
   }
 };
 
-Enemy.updateGreenBalls = function () {
-  for (var i = 0; i < Enemy.enemies.length; i++) {
-    var e = Enemy.enemies[i], direction = Player.x > e.x ? 1 : -1;
-    e.vx += direction * CONFIG.GREEN_BALL_SPEED;
-    if (e.vx > CONFIG.GREEN_BALL_MAX_SPEED) { e.vx = CONFIG.GREEN_BALL_MAX_SPEED; }
-    if (e.vx < -CONFIG.GREEN_BALL_MAX_SPEED) { e.vx = -CONFIG.GREEN_BALL_MAX_SPEED; }
-    e.vy += CONFIG.GRAVITY;
-    if (Collide.hitsSolid(e.x - e.radius, e.y - e.radius + e.vy, e.radius * 2, e.radius * 2)) {
-      e.vy = -CONFIG.GREEN_BALL_BOUNCE;
-    } else { e.y += e.vy; }
-    if (!Collide.hitsSolid(e.x - e.radius + e.vx, e.y - e.radius, e.radius * 2, e.radius * 2)) { e.x += e.vx; }
-    else { e.vx *= -0.7; }
-    e.angle += e.vx / e.radius;
+Enemy.updateGreenBall = function (e) {
+  var direction = Player.x > e.x ? 1 : -1;
+  e.vx += direction * CONFIG.GREEN_BALL_SPEED;
+  e.vx = Math.max(-CONFIG.GREEN_BALL_MAX_SPEED, Math.min(CONFIG.GREEN_BALL_MAX_SPEED, e.vx));
+  e.jumpTimer--;
+  e.vy += CONFIG.GRAVITY;
+  if (Collide.hitsSolid(e.x - e.radius, e.y - e.radius + e.vy, e.radius * 2, e.radius * 2)) {
+    e.vy = -CONFIG.GREEN_BALL_BOUNCE; e.grounded = true;
+  } else { e.y += e.vy; e.grounded = false; }
+  if (e.grounded && e.jumpTimer <= 0) {
+    e.vy = -CONFIG.GREEN_BALL_BOUNCE; e.grounded = false;
+    e.jumpTimer = CONFIG.GREEN_BALL_JUMP_MIN + Math.floor(Math.random() * (CONFIG.GREEN_BALL_JUMP_MAX - CONFIG.GREEN_BALL_JUMP_MIN + 1));
   }
+  if (!Collide.hitsSolid(e.x - e.radius + e.vx, e.y - e.radius, e.radius * 2, e.radius * 2)) { e.x += e.vx; } else { e.vx *= -0.7; }
+  e.angle += e.vx / e.radius;
 };
 
 Enemy.updateBullets = function () {

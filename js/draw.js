@@ -23,7 +23,7 @@ Draw.world = function () {
     if (here === "F") { Draw.finish(x, y, size); }
   }
 };
-Draw.block = function (x, y, size) { var ctx = Draw.ctx; ctx.fillStyle = "#ff0000"; ctx.fillRect(x, y, size, size); ctx.strokeStyle = "#ff0000"; ctx.lineWidth = CONFIG.LINE_WIDTH; ctx.strokeRect(x + CONFIG.LINE_WIDTH / 2, y + CONFIG.LINE_WIDTH / 2, size - CONFIG.LINE_WIDTH, size - CONFIG.LINE_WIDTH); };
+Draw.block = function (x, y, size) { var ctx = Draw.ctx; ctx.fillStyle = "#ff0000"; ctx.fillRect(x, y, size, size); ctx.strokeStyle = "#ff0000"; ctx.lineWidth = CONFIG.LINE_WIDTH; ctx.strokeRect(x, y, size, size); };
 Draw.spike = function (x, y, size) { var ctx = Draw.ctx; ctx.fillStyle = "#ff0000"; ctx.beginPath(); ctx.moveTo(x, y + size); ctx.lineTo(x + size / 2, y); ctx.lineTo(x + size, y + size); ctx.closePath(); ctx.fill(); };
 Draw.finish = function (x, y, size) { var ctx = Draw.ctx; ctx.fillStyle = "#ff0000"; ctx.fillRect(x + size / 2 - 2, y, 4, size); ctx.beginPath(); ctx.moveTo(x + size / 2 + 2, y + 4); ctx.lineTo(x + size - 4, y + 12); ctx.lineTo(x + size / 2 + 2, y + 20); ctx.closePath(); ctx.fill(); };
 
@@ -31,14 +31,18 @@ Draw.enemies = function () {
   var ctx = Draw.ctx;
   for (var i = 0; i < Enemy.enemies.length; i++) {
     var e = Enemy.enemies[i];
+    if (e.type === "drill" && e.state === "approach") {
+      ctx.save(); ctx.strokeStyle = "#ff3333"; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
+      ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(Player.x + CONFIG.PLAYER_SIZE / 2, Player.y + CONFIG.PLAYER_SIZE / 2); ctx.stroke(); ctx.restore();
+    }
     ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle || 0);
-    if (Enemy.type === "cuobid") {
+    if (e.type === "cuboid") {
       ctx.fillStyle = "#7b2cff"; ctx.fillRect(-e.radius, -e.radius, e.radius * 2, e.radius * 2);
       ctx.strokeStyle = "#d6a8ff"; ctx.strokeRect(-e.radius, -e.radius, e.radius * 2, e.radius * 2);
       ctx.fillStyle = "#b66cff"; ctx.beginPath(); ctx.moveTo(-e.radius, -e.radius); ctx.lineTo(-e.radius + 8, -e.radius - 8); ctx.lineTo(e.radius + 8, -e.radius - 8); ctx.lineTo(e.radius, -e.radius); ctx.fill();
-    } else if (Enemy.type === "drone") {
+    } else if (e.type === "drone") {
       ctx.fillStyle = "#ffaa00"; ctx.fillRect(-20, -12, 40, 24); ctx.fillRect(-28, -18, 56, 5);
-    } else if (Enemy.type === "evilSpike") {
+    } else if (e.type === "drill") {
       ctx.fillStyle = "#ff6600"; ctx.beginPath(); ctx.moveTo(e.radius + 8, 0); ctx.lineTo(-e.radius, -e.radius); ctx.lineTo(-e.radius, e.radius); ctx.closePath(); ctx.fill();
     } else {
       ctx.fillStyle = "#19d34a"; ctx.beginPath(); ctx.arc(0, 0, e.radius, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#9affad"; ctx.stroke();

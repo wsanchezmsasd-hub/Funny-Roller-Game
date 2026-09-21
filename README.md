@@ -1,74 +1,23 @@
-# ROLLER - the base game
+# ROLLSCAPE
 
-A circle with an off-center dot rolls through a black and white world.
-It can move, jump, land on platforms, and die on spikes. It wins by
-touching the flag.
+Welcome to your eternal prison.
 
-That is the whole game. Everything else is yours to add.
+In this infinite dimension, you will be collecting tessaracts while avoiding enemies and surviving curses you have chosen. You can buy blessings to help you with tessaracts if you have the coin for it.
+You can fight enemies back with your weapons to take them down for a moment, but they will always respawn.
+## How to survive
 
-## How to play it
-
-Push your changes, then open your GitHub Pages link.
-Press `Ctrl + Shift + R` to hard refresh, or you will see the old version.
-
-- LEFT / RIGHT arrow - roll
+- W / D - roll
 - SPACE or UP arrow - jump
-- R - restart the level
+- M1: use weapon (Bazooka, AK, Sidearms)
+- E: use ability (if your weapon has one)
+## ROSTER
+Enemies
+Green ball 4?
+Bouncy balls that occasionally jump towards you.
+Cuboid
+3 cubes move towards you; speed is  based on your distance
+Drill
+Dashes in your direction; keep out of its way
+Drone
+Moves above you, then fires a volley towards you
 
-## Where everything lives
-
-| If you want to change... | Open this file |
-|---|---|
-| how high it jumps, how fast it moves, how heavy gravity feels | `js/config.js` |
-| which keys do what | `js/input.js` |
-| the shape of the levels | `data/levels.json` |
-| the level pieces themselves | `data/pieces.json` |
-| how the world is built out of pieces | `js/level.js` |
-| whether something counts as a hit | `js/collide.js` |
-| how the player moves, jumps, and dies | `js/player.js` |
-| how anything LOOKS | `js/draw.js` |
-| the rules, the win and lose conditions, the loop | `js/game.js` |
-| the page around the game | `index.html` and `style.css` |
-
-## How levels work
-
-A level is a list of piece names, in order, left to right.
-Open `data/levels.json` and you will see something like this:
-
-    "pieces": ["start", "flat", "gap", "flat", "spikes", "finish"]
-
-Every one of those names is a little picture in `data/pieces.json`.
-Each picture is 8 columns wide and 10 rows tall:
-
-    "gap": [
-      "........",
-      "........",
-      "........",
-      "........",
-      "........",
-      "........",
-      "........",
-      "........",
-      "###..###",
-      "###..###"
-    ]
-
-- `.` is empty air
-- `#` is a solid block
-- `^` is a spike
-- `S` is where the player starts
-- `F` is the finish
-
-To make a new level: change the list of names.
-To make a new piece: copy one, rename it, redraw the picture, then use
-that name in a level.
-
-## Things to know before you change anything
-
-- The player is a **box** for collisions and a **circle** for drawing.
-  That is on purpose. Boxes are easier to check and nobody can tell.
-- Every file is loaded in order at the bottom of `index.html`.
-  If you add a new file, add it to that list too.
-- The level data is loaded with `fetch()`, which only works over http.
-  Use your GitHub Pages link. Opening `index.html` straight off your
-  hard drive will not load the levels.

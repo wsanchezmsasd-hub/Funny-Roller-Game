@@ -1,64 +1,50 @@
 /* =====================================================================
-   game.js  --  THE RULES AND THE LOOP.
+   game.js -- THE RULES AND THE LOOP.
    ===================================================================== */
+var Game = { mode: "playing", levelNumber: 0, nextEnemy: null };
 
-var Game = {
-  mode: "playing",   // "playing", "dead", or "won"
-  levelNumber: 0
-};
-
-Game.startLevel = function (levelNumber) {
+Game.startLevel = function (levelNumber, enemyType) {
   Game.levelNumber = levelNumber;
   Level.build(levelNumber);
   Player.reset();
+  Enemy.reset(enemyType);
   Game.mode = "playing";
   Game.showMessage("Level " + (levelNumber + 1));
 };
 
 Game.nextLevel = function () {
   var nextLevel = Game.levelNumber + 1;
-
-  if (nextLevel < Level.levels.length) {
-    Game.startLevel(nextLevel);
-    return;
-  }
-
-  // final level: keep the win state
+  if (nextLevel < Level.levels.length) { Game.showEnemyChoice(nextLevel); return; }
   Game.mode = "won";
   Game.showMessage("You beat every level! Press R to try again.");
 };
 
-Game.showMessage = function (text) {
-  document.getElementById("message").textContent = text;
+Game.showEnemyChoice = function (nextLevel) {
+  Game.mode = "choice";
+  var panel = document.getElementById("enemy-choice"), cards = document.getElementById("enemy-cards");
+  cards.innerHTML = "";
+  Game.showMessage("Choose an enemy for level " + (nextLevel + 1));
+  Enemy.randomChoices().forEach(function (choice) {
+    var button = document.createElement("button");
+    button.className = "enemy-card";
+    button.innerHTML = "<strong>" + choice.name + "</strong><span>" + choice.description + "</span>";
+    button.addEventListener("click", function () { panel.hidden = true; Game.startLevel(nextLevel, choice.type); });
+    cards.appendChild(button);
+  });
+  panel.hidden = false;
 };
 
-// --- ONE FRAME --------------------------------------------------------
+Game.showMessage = function (text) { document.getElementById("message").textContent = text; };
+
 Game.update = function () {
-  if (Input.restart) {
-    Game.startLevel(Game.levelNumber);
-    return;
-  }
-
+  if (Input.restart) { document.getElementById("enemy-choice").hidden = true; Game.startLevel(Game.levelNumber); return; }
   if (Game.mode !== "playing") { return; }
-
   Player.update();
-
-  if (Player.isDead()) {
-    Game.mode = "dead";
-    Game.showMessage("You hit something. Press R to try again.");
-    return;
-  }
-
-  if (Player.hasWon()) {
-    Game.nextLevel();
-    return;
-  }
+  Enemy.update();
+  if (Player.isDead() || Enemy.hitsPlayer()) { Game.mode = "dead"; Game.showMessage("You hit something. Press R to try again."); return; }
+  if (Player.hasWon()) { Game.nextLevel(); }
 };
 
-// --- THE LOOP ITSELF --------------------------------------------------
 Game.loop = function () {
-  Game.update();
-  Draw.updateCamera();
-  Draw.everything();
-  window.requestAnimationFrame(Game.loop);
+  Game.update(); Draw.updateCamera(); Draw.everything(); window.requestAnimationFrame(Game.loop);
 };

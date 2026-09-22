@@ -1,1 +1,15 @@
-body{background:#000;color:#f00;font-family:monospace;text-align:center;margin:24px}h1{letter-spacing:6px;font-size:24px}canvas{border:3px solid #f00;background:#000;display:block;margin:auto}#message{font-size:18px;min-height:24px}.controls{font-size:13px}#lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);z-index:2}#lobby[hidden]{display:none}#lobby-content{border:2px solid #f00;padding:28px;max-width:700px;background:#080808}#lobby button{margin:6px;padding:12px;border:1px solid #f00;background:#000;color:#f00;font:inherit;cursor:pointer}#lobby button:hover{background:#f00;color:#000}
+body { background:#000; color:#f00; font-family:monospace; text-align:center; margin:24px; }
+h1 { letter-spacing:6px; font-size:24px; margin-bottom:16px; }
+canvas { border:3px solid #f00; background:#000; display:block; margin:0 auto; }
+#message { font-size:18px; min-height:24px; margin-top:16px; }
+.controls { font-size:13px; }
+#enemy-choice { position:fixed; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; background:rgba(0,0,0,.92); z-index:2; }
+#enemy-choice[hidden] { display:none; }
+#enemy-choice h2 { margin:0; letter-spacing:2px; }
+#enemy-cards { display:flex; gap:14px; max-width:900px; justify-content:center; }
+.enemy-card { width:190px; min-height:130px; padding:18px 12px; border:2px solid #f00; background:#000; color:#f00; font:inherit; cursor:pointer; }
+.enemy-card:hover,.enemy-card:focus { background:#f00; color:#000; }
+.enemy-card strong,.enemy-card span { display:block; }
+.enemy-card strong { font-size:17px; margin-bottom:12px; }
+.enemy-card span { font-size:12px; line-height:1.4; }
+@media (max-width:700px) { #enemy-cards { flex-direction:column; } .enemy-card { width:280px; min-height:70px; } }

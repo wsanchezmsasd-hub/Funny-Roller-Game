@@ -1,98 +1,10 @@
-/* =====================================================================
-   player.js  --  THE ROLLING CIRCLE.
-
-   This file owns everything about the player: where it is, how fast it
-   is going, and what happens when it hits something.
-
-   It does NOT draw anything. Drawing lives in js/draw.js.
-   ===================================================================== */
-
-var Player = {
-  x: 0,            // position in pixels, left edge of the box
-  y: 0,            // position in pixels, top edge of the box
-  vx: 0,           // speed left and right
-  vy: 0,           // speed up and down
-  onGround: false, // is the player standing on something right now?
-  angle: 0         // how far the circle has rolled, for drawing the dot
-};
-
-// Put the player back at the level's S square.
-Player.reset = function () {
-  Player.x = Level.startX;
-  Player.y = Level.startY;
-  Player.vx = 0;
-  Player.vy = 0;
-  Player.onGround = false;
-  Player.angle = 0;
-};
-
-// Run one frame of player movement.
-Player.update = function () {
-  var size = CONFIG.PLAYER_SIZE;
-
-  // --- 1. decide how fast to go sideways ------------------------------
-
-  var size = CONFIG.PLAYER_SIZE;
-
-  // --- 1. decide how fast to go sideways ------------------------------
-  if (!Input.left && !Input.right) {Player.vx = Player.vx * 0.95;} // friction
-  if (Input.left)  { Player.vx = Player.vx - CONFIG.MOVE_SPEED; } // speed up left
-  if (Input.right) { Player.vx = Player.vx + CONFIG.MOVE_SPEED; } // speed up right
-
-  if (Player.vx > 7.5) { Player.vx = 7.5; }
-  if (Player.vx < -7.5) { Player.vx = -7.5; }
-
-  // --- 2. jump, but only if we are standing on something --------------
-  if (Input.jump && Player.onGround) {
-    Player.vy = -CONFIG.JUMP_POWER;   // negative is UP
-    Player.onGround = false;
-  }
-
-  // --- 3. gravity pulls down every single frame -----------------------
-  Player.vy = Player.vy + CONFIG.GRAVITY;
-  if (Player.vy > CONFIG.MAX_FALL) { Player.vy = CONFIG.MAX_FALL; }
-
-  // --- 4. move sideways, one pixel at a time, stopping at walls -------
-  var stepX = 0;
-  if (Player.vx > 0) { stepX = 1; }
-  if (Player.vx < 0) { stepX = -1; }
-
-  for (var i = 0; i < Math.abs(Player.vx); i++) {
-    if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) { break; }
-    Player.x = Player.x + stepX;
-    Player.angle = Player.angle + stepX / CONFIG.PLAYER_RADIUS; // roll it
-  }
-
-  // --- 5. move up or down, one pixel at a time ------------------------
-  var stepY = 0;
-  if (Player.vy > 0) { stepY = 1; }
-  if (Player.vy < 0) { stepY = -1; }
-
-  Player.onGround = false;
-
-  for (var j = 0; j < Math.abs(Player.vy); j++) {
-    if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) {
-      if (stepY > 0) { Player.onGround = true; }  // we landed on something
-      Player.vy = 0;
-      break;
-    }
-    Player.y = Player.y + stepY;
-  }
-
-  // --- 6. keep the player inside the left edge of the world -----------
-  if (Player.x < 0) { Player.x = 0; }
-};
-
-// Did the player just touch something deadly?
-Player.isDead = function () {
-  var size = CONFIG.PLAYER_SIZE;
-  if (Collide.hitsSpike(Player.x, Player.y, size, size)) { return true; }
-  if (Player.y > CONFIG.CANVAS_H + 200) { return true; }   // fell off the world
-  return false;
-};
-
-// Did the player just reach the finish?
-Player.hasWon = function () {
-  var size = CONFIG.PLAYER_SIZE;
-  return Collide.hitsFinish(Player.x, Player.y, size, size);
-};
+var Player={x:0,y:0,vx:0,vy:0,onGround:false,angle:0,invincible:0,dashCooldown:0};
+Player.reset=function(){Player.x=Level.startX;Player.y=Level.startY;Player.vx=0;Player.vy=0;Player.onGround=false;Player.angle=0;Player.invincible=0;Player.dashCooldown=0;};
+Player.update=function(){var s=CONFIG.PLAYER_SIZE;if(Player.invincible>0)Player.invincible--;if(Player.dashCooldown>0)Player.dashCooldown--;
+ if(Input.dash&&Player.dashCooldown<=0){var dir=Input.left?-1:1;Player.vx=dir*13;Player.invincible=18;Player.dashCooldown=CONFIG.PISTOL_COOLDOWN;}
+ if(!Input.left&&!Input.right)Player.vx*=.95;if(Input.left)Player.vx-=CONFIG.MOVE_SPEED;if(Input.right)Player.vx+=CONFIG.MOVE_SPEED;Player.vx=Math.max(-7.5,Math.min(7.5,Player.vx));
+ if(Input.jump&&Player.onGround){Player.vy=-CONFIG.JUMP_POWER;Player.onGround=false;}Player.vy=Math.min(CONFIG.MAX_FALL,Player.vy+CONFIG.GRAVITY);
+ var sx=Player.vx>0?1:-1;for(var i=0;i<Math.abs(Player.vx);i++){if(Collide.hitsSolid(Player.x+sx,Player.y,s,s))break;Player.x+=sx;Player.angle+=sx/CONFIG.PLAYER_RADIUS;}
+ var sy=Player.vy>0?1:-1;Player.onGround=false;for(var j=0;j<Math.abs(Player.vy);j++){if(Collide.hitsSolid(Player.x,Player.y+sy,s,s)){if(sy>0)Player.onGround=true;Player.vy=0;break;}Player.y+=sy;}if(Player.x<0)Player.x=0;};
+Player.isDead=function(){return Player.invincible<=0&&(Collide.hitsSpike(Player.x,Player.y,32,32)||Player.y>CONFIG.CANVAS_H+200);};
+Player.hasWon=function(){return Level.isFinish(Math.floor((Player.x+16)/CONFIG.TILE),Math.floor((Player.y+16)/CONFIG.TILE));};

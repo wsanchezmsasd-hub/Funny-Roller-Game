@@ -1,62 +1,7 @@
-/* =====================================================================
-   game.js -- THE RULES AND THE LOOP.
-   ===================================================================== */
-var Game = { mode: "playing", levelNumber: 0, nextEnemy: null };
-
-Game.startLevel = function (levelNumber, enemyType) {
-  var resetRoster = levelNumber === CONFIG.START_LEVEL && !enemyType;
-  Game.levelNumber = levelNumber;
-  Level.build(levelNumber);
-  Player.reset();
-  Enemy.reset(enemyType, resetRoster);
-  Game.mode = "playing";
-  Game.showMessage("Level " + (levelNumber + 1));
-};
-
-Game.nextLevel = function () {
-  var nextLevel = Game.levelNumber + 1;
-  if (nextLevel < Level.levels.length) { Game.showEnemyChoice(nextLevel); return; }
-  Game.mode = "won";
-  Game.showMessage("You beat every level! Press R to try again.");
-};
-
-Game.showEnemyChoice = function (nextLevel) {
-  Game.mode = "choice";
-  var panel = document.getElementById("enemy-choice"), cards = document.getElementById("enemy-cards");
-  cards.innerHTML = "";
-  Game.showMessage("Choose an enemy for level " + (nextLevel + 1));
-  Enemy.randomChoices().forEach(function (choice) {
-    var button = document.createElement("button");
-    button.className = "enemy-card";
-    button.innerHTML = "<strong>" + choice.name + "</strong><span>" + choice.description + "</span>";
-    button.addEventListener("click", function () { panel.hidden = true; Game.startLevel(nextLevel, choice.type); });
-    cards.appendChild(button);
-  });
-  panel.hidden = false;
-};
-
-Game.showMessage = function (text) { document.getElementById("message").textContent = text; };
-
-Game.update = function () {
-  if (Input.restart) {
-    document.getElementById("enemy-choice").hidden = true;
-    Game.startLevel(CONFIG.START_LEVEL);
-    return;
-  }
-  if (Game.mode !== "playing") { return; }
-  Player.update();
-  Enemy.update();
-  if (Player.isDead() || Enemy.hitsPlayer()) {
-    // Leave the current enemy objects on screen while the death message is shown.
-    // The next restart deliberately returns to level 0 and clears the roster.
-    Game.levelNumber = CONFIG.START_LEVEL;
-    Game.mode = "dead";
-    Game.showMessage("You hit something. Press R to return to level 0.");
-    return;
-  }
-  if (Player.hasWon()) { Game.nextLevel(); }
-};
-
-Game.loop = function () {
-  Game.update(); Draw.updateCamera(); Draw.everything(); window.requestAnimationFrame(Game.loop);
-};
+var Game={mode:"playing",levelNumber:0,redTessaracts:0,goldTessaracts:0,curses:[],nextEnemy:null};
+Game.startLevel=function(n,type){if(n>4){Level.levels[n]=null;}Game.levelNumber=n;Level.build(n);Player.reset();Enemy.reset(type,n===0);Game.mode="playing";Game.showMessage("Level "+(n+1));};
+Game.nextLevel=function(){var n=Game.levelNumber+1;Game.mode="lobby";Game.showLobby(n);};
+Game.showMessage=function(t){document.getElementById("message").textContent=t;};
+Game.showLobby=function(n){var p=document.getElementById("lobby"),c=document.getElementById("lobby-content");c.innerHTML='<h2>INTERMISSION // SECTOR '+(n+1)+'</h2><p>Gold Tessaracts: '+Game.goldTessaracts+'</p><p>Choose an enemy, weapon, or permanent curse.</p>';Enemy.randomChoices().forEach(function(ch){var b=document.createElement("button");b.textContent="Add "+ch.name;b.onclick=function(){p.hidden=true;Game.startLevel(n,ch.type);};c.appendChild(b);});[{n:"Bazooka",cost:2,w:1},{n:"AK-47",cost:3,w:2},{n:"Pistols",cost:1,w:3}].forEach(function(g){var b=document.createElement("button");b.textContent=g.n+" ("+g.cost+" gold)";b.disabled=Game.goldTessaracts<g.cost;b.onclick=function(){Game.goldTessaracts-=g.cost;Game.weapon=g.w;p.hidden=true;Game.startLevel(n);};c.appendChild(b);});Game.curses.push("Enemy mutations persist");p.hidden=false;};
+Game.update=function(){if(Input.restart){document.getElementById("lobby").hidden=true;Game.startLevel(0);return;}if(Game.mode!=="playing")return;Level.collect();if(Input.fire&&!Game.fireLock){Enemy.fire(Input.weapon);Game.fireLock=true;}if(!Input.fire)Game.fireLock=false;Player.update();Enemy.update();if(Player.isDead()||Enemy.hitsPlayer()){Game.mode="dead";Game.showMessage("Defeated. Press R to return to level 0.");return;}if(Player.hasWon())Game.nextLevel();};
+Game.loop=function(){Game.update();Draw.updateCamera();Draw.everything();requestAnimationFrame(Game.loop);};

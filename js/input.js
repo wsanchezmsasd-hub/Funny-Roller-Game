@@ -1,37 +1,15 @@
-/* =====================================================================
-   input.js  --  READING THE KEYBOARD.
-
-   Nothing in here decides what happens. It only records which keys are
-   being held down right now. js/player.js is what reads these values
-   and decides to move.
-   ===================================================================== */
-
-var Input = {
-  left: false,
-  right: false,
-  jump: false,
-  restart: false
-};
-
-// Called whenever a key goes DOWN.
-window.addEventListener("keydown", function (event) {
-  setKey(event.key, true);
-  // stop the arrow keys and space from scrolling the page
-  if (["ArrowLeft", "ArrowRight", "ArrowUp", " "].indexOf(event.key) >= 0) {
-    event.preventDefault();
-  }
+var Input = { left:false,right:false,jump:false,restart:false,fire:false,weapon:1,dash:false };
+window.addEventListener("keydown",function(e){
+  setKey(e.key,true);
+  if(["ArrowLeft","ArrowRight","ArrowUp"," ","z","x","c","1","2","3"].indexOf(e.key)>=0)e.preventDefault();
 });
-
-// Called whenever a key comes back UP.
-window.addEventListener("keyup", function (event) {
-  setKey(event.key, false);
-});
-
-// One place that decides which key means what.
-// WANT TO ADD A KEY? Add a line here.
-function setKey(key, isDown) {
-  if (key === "ArrowLeft"  || key === "a" || key === "A") { Input.left  = isDown; }
-  if (key === "ArrowRight" || key === "d" || key === "D") { Input.right = isDown; }
-  if (key === "ArrowUp"    || key === " " || key === "w" || key === "W") { Input.jump = isDown; }
-  if (key === "r" || key === "R") { Input.restart = isDown; }
+window.addEventListener("keyup",function(e){setKey(e.key,false);});
+function setKey(k,d){
+  if(k==="ArrowLeft"||k==="a"||k==="A")Input.left=d;
+  if(k==="ArrowRight"||k==="d"||k==="D")Input.right=d;
+  if(k==="ArrowUp"||k===" "||k==="w"||k==="W")Input.jump=d;
+  if(k==="r"||k==="R")Input.restart=d;
+  if(k==="z"||k==="Z")Input.fire=d;
+  if(k==="x"||k==="X")Input.dash=d;
+  if(k==="1")Input.weapon=1;if(k==="2")Input.weapon=2;if(k==="3")Input.weapon=3;
 }

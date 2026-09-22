@@ -37,9 +37,13 @@ Draw.enemies = function () {
     }
     ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(e.angle || 0);
     if (e.type === "cuboid") {
-      ctx.fillStyle = "#7b2cff"; ctx.fillRect(-e.radius, -e.radius, e.radius * 2, e.radius * 2);
-      ctx.strokeStyle = "#d6a8ff"; ctx.strokeRect(-e.radius, -e.radius, e.radius * 2, e.radius * 2);
-      ctx.fillStyle = "#b66cff"; ctx.beginPath(); ctx.moveTo(-e.radius, -e.radius); ctx.lineTo(-e.radius + 8, -e.radius - 8); ctx.lineTo(e.radius + 8, -e.radius - 8); ctx.lineTo(e.radius, -e.radius); ctx.fill();
+      // Black/red beveled faces make this read as a cube instead of a flat square.
+      var r = e.radius;
+      ctx.fillStyle = "#080808"; ctx.fillRect(-r, -r, r * 2, r * 2);
+      ctx.strokeStyle = "#ff2020"; ctx.lineWidth = 3; ctx.strokeRect(-r, -r, r * 2, r * 2);
+      ctx.fillStyle = "#3a0000"; ctx.beginPath(); ctx.moveTo(-r, -r); ctx.lineTo(-r + 10, -r - 10); ctx.lineTo(r + 10, -r - 10); ctx.lineTo(r, -r); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#750000"; ctx.beginPath(); ctx.moveTo(r, -r); ctx.lineTo(r + 10, -r - 10); ctx.lineTo(r + 10, r - 10); ctx.lineTo(r, r); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#ff5555"; ctx.beginPath(); ctx.moveTo(-r + 4, -r + 4); ctx.lineTo(r - 4, -r + 4); ctx.lineTo(r - 4, r - 4); ctx.lineTo(-r + 4, r - 4); ctx.closePath(); ctx.stroke();
     } else if (e.type === "drone") {
       ctx.fillStyle = "#ffaa00"; ctx.fillRect(-20, -12, 40, 24); ctx.fillRect(-28, -18, 56, 5);
     } else if (e.type === "drill") {

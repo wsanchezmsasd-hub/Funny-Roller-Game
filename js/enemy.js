@@ -8,9 +8,9 @@ var Enemy = {
   bullets: [],
   choices: [
     { type: "cuboid", name: "Cuboid", description: "A group of cubes that follows you through walls and can combine." },
-    { type: "drone", name: "Drone", description: "Flies above you and fires while it moves." },
-    { type: "drill", name: "Drill", description: "Warns you with a line, then dashes in a straight line toward you." },
-    { type: "greenBall4", name: "Green ball 4", description: "Four bouncy green balls roll and jump toward you." }
+    { type: "drone", name: "Drone", description: "Flies above you and fires short, fast bursts." },
+    { type: "drill", name: "Drill", description: "Points at you, warns you with a line, then dashes." },
+    { type: "greenBall4", name: "Green ball 4", description: "Four green balls leap toward you every 1.5 seconds." }
   ]
 };
 
@@ -41,18 +41,20 @@ Enemy.spawnType = function (type, x, y) {
     var radius = CONFIG.GREEN_BALL_SIZE / 2;
     for (var i = 0; i < CONFIG.GREEN_BALL_COUNT; i++) {
       Enemy.enemies.push({ type: "greenBall4", x: x + i * 42, y: y - i * 24, vx: 0, vy: 0,
-        radius: radius, angle: 0, jumpTimer: 60 + Math.floor(Math.random() * 61), grounded: false });
+        radius: radius, angle: 0, jumpTimer: CONFIG.GREEN_BALL_JUMP_INTERVAL, grounded: false });
     }
   } else if (Enemy.isType(type, "cuboid")) {
+    // Keep the individual cubes well separated until their paths naturally meet.
     for (var j = 0; j < CONFIG.CUOBID_GROUP_SIZE; j++) {
-      Enemy.enemies.push({ type: "cuboid", x: x + j * 30, y: y - (j % 2) * 28, vx: 0, vy: 0,
-        radius: CONFIG.CUOBID_SIZE / 2, angle: 0 });
+      Enemy.enemies.push({ type: "cuboid", x: x + j * CONFIG.CUOBID_SPAWN_SPACING,
+        y: y - (j % 2) * 90, vx: 0, vy: 0, radius: CONFIG.CUOBID_SIZE / 2,
+        angle: 0, combined: false });
     }
   } else {
     var actualType = Enemy.isType(type, "drill") ? "drill" : type;
     var size = actualType === "drone" ? CONFIG.CUOBID_SIZE / 2 : CONFIG.EVIL_SPIKE_SIZE / 2;
     Enemy.enemies.push({ type: actualType, x: x, y: y, vx: 0, vy: 0, state: "approach",
-      timer: 0, shotTimer: 0, radius: size, angle: 0 });
+      timer: 0, shotTimer: 0, burstShots: 0, radius: size, angle: 0, targetAngle: 0 });
   }
 };
 
@@ -83,36 +85,52 @@ Enemy.updateCuboid = function (e) {
 };
 
 Enemy.tryCombineCuboids = function () {
-  var cuboids = Enemy.enemies.filter(function (e) { return e.type === "cuboid"; });
+  var cuboids = Enemy.enemies.filter(function (e) { return e.type === "cuboid" && !e.combined; });
   if (cuboids.length < CONFIG.CUOBID_GROUP_SIZE) { return; }
   var cx = 0, cy = 0;
   cuboids.forEach(function (e) { cx += e.x; cy += e.y; });
   cx /= cuboids.length; cy /= cuboids.length;
   var close = cuboids.every(function (e) { return Math.hypot(e.x - cx, e.y - cy) < CONFIG.CUOBID_MERGE_DISTANCE; });
   if (!close) { return; }
-  Enemy.enemies = Enemy.enemies.filter(function (e) { return e.type !== "cuboid"; });
+  Enemy.enemies = Enemy.enemies.filter(function (e) { return e.type !== "cuboid" || e.combined; });
   Enemy.enemies.push({ type: "cuboid", x: cx, y: cy, vx: 0, vy: 0,
     radius: CONFIG.CUOBID_SIZE / 2 * Math.sqrt(cuboids.length), angle: 0, combined: true });
 };
 
 Enemy.updateDrone = function (e) {
   e.timer++;
-  e.x += (Player.x - e.x) * CONFIG.DRONE_FOLLOW_RATE;
-  e.y += (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER - e.y) * CONFIG.DRONE_FOLLOW_RATE;
+  var firing = e.burstShots > 0;
+  var followRate = firing ? CONFIG.DRONE_FOLLOW_RATE * CONFIG.DRONE_FIRE_MOVE_FACTOR : CONFIG.DRONE_FAST_FOLLOW_RATE;
+  e.x += (Player.x - e.x) * followRate;
+  e.y += (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER - e.y) * followRate;
+
   e.shotTimer--;
-  if (e.shotTimer <= 0) {
+  if (e.shotTimer <= 0 && e.burstShots > 0) {
     var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x, dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y;
     var distance = Math.sqrt(dx * dx + dy * dy) || 1;
-    Enemy.bullets.push({ x: e.x, y: e.y, vx: dx / distance * CONFIG.DRONE_BULLET_SPEED, vy: dy / distance * CONFIG.DRONE_BULLET_SPEED, life: CONFIG.DRONE_BULLET_LIFE });
-    e.shotTimer = CONFIG.DRONE_SHOT_INTERVAL;
+    Enemy.bullets.push({ x: e.x, y: e.y, vx: dx / distance * CONFIG.DRONE_BULLET_SPEED,
+      vy: dy / distance * CONFIG.DRONE_BULLET_SPEED, life: CONFIG.DRONE_BULLET_LIFE });
+    e.burstShots--;
+    e.shotTimer = e.burstShots ? CONFIG.DRONE_SHOT_INTERVAL : CONFIG.DRONE_BURST_COOLDOWN;
+  } else if (e.shotTimer <= 0 && e.burstShots === 0) {
+    e.burstShots = CONFIG.DRONE_SHOTS;
+    e.shotTimer = 1;
   }
 };
 
 Enemy.updateDrill = function (e) {
   e.timer++;
+  var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x;
+  var dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y;
+  e.targetAngle = Math.atan2(dy, dx);
+  var turn = e.targetAngle - e.angle;
+  while (turn > Math.PI) { turn -= Math.PI * 2; }
+  while (turn < -Math.PI) { turn += Math.PI * 2; }
+  e.angle += turn * CONFIG.DRILL_TURN_RATE;
+
   if (e.state === "approach" && e.timer > CONFIG.EVIL_SPIKE_WARNING_TIME) {
-    var dx = Player.x - e.x, dy = Player.y - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1;
-    e.vx = dx / distance * CONFIG.EVIL_SPIKE_DASH_SPEED; e.vy = dy / distance * CONFIG.EVIL_SPIKE_DASH_SPEED;
+    e.vx = Math.cos(e.angle) * CONFIG.EVIL_SPIKE_DASH_SPEED;
+    e.vy = Math.sin(e.angle) * CONFIG.EVIL_SPIKE_DASH_SPEED;
     e.state = "dash"; e.timer = 0;
   }
   if (e.state === "dash") {
@@ -122,19 +140,28 @@ Enemy.updateDrill = function (e) {
 };
 
 Enemy.updateGreenBall = function (e) {
-  var direction = Player.x > e.x ? 1 : -1;
-  e.vx += direction * CONFIG.GREEN_BALL_SPEED;
-  e.vx = Math.max(-CONFIG.GREEN_BALL_MAX_SPEED, Math.min(CONFIG.GREEN_BALL_MAX_SPEED, e.vx));
   e.jumpTimer--;
   e.vy += CONFIG.GRAVITY;
   if (Collide.hitsSolid(e.x - e.radius, e.y - e.radius + e.vy, e.radius * 2, e.radius * 2)) {
-    e.vy = -CONFIG.GREEN_BALL_BOUNCE; e.grounded = true;
+    e.y += e.vy;
+    e.vy = 0;
+    e.grounded = true;
   } else { e.y += e.vy; e.grounded = false; }
+
+  // Green balls do not roll toward the player: each leap is aimed at them.
   if (e.grounded && e.jumpTimer <= 0) {
-    e.vy = -CONFIG.GREEN_BALL_BOUNCE; e.grounded = false;
-    e.jumpTimer = CONFIG.GREEN_BALL_JUMP_MIN + Math.floor(Math.random() * (CONFIG.GREEN_BALL_JUMP_MAX - CONFIG.GREEN_BALL_JUMP_MIN + 1));
+    var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x;
+    var dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y;
+    var distance = Math.sqrt(dx * dx + dy * dy) || 1;
+    e.vx = dx / distance * CONFIG.GREEN_BALL_JUMP_SPEED;
+    e.vy = dy / distance * CONFIG.GREEN_BALL_JUMP_SPEED - 6;
+    e.grounded = false;
+    e.jumpTimer = CONFIG.GREEN_BALL_JUMP_INTERVAL;
   }
-  if (!Collide.hitsSolid(e.x - e.radius + e.vx, e.y - e.radius, e.radius * 2, e.radius * 2)) { e.x += e.vx; } else { e.vx *= -0.7; }
+  if (!Collide.hitsSolid(e.x - e.radius + e.vx, e.y - e.radius, e.radius * 2, e.radius * 2)) {
+    e.x += e.vx;
+  } else { e.vx = 0; }
+  e.vx *= 0.96;
   e.angle += e.vx / e.radius;
 };
 

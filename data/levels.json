@@ -1,62 +1,25 @@
 {
-  "_comment": "A level is just a list of piece names in order, left to right. Every name you use here must exist in data/pieces.json. Add, remove, or reorder pieces to build a new level. Every level should start with 'start' and end with 'finish'.",
-
+  "_comment": "A level is just a list of piece names in order. Every name you use here must exist in data/pieces.json.",
   "levels": [
     {
       "name": "Level 1 - Warm Up",
-      "pieces": [
-        "start",
-        "flat",
-        "gap",
-        "flat",
-        "spikes",
-        "platform",
-        "stairs",
-        "finish"
-      ]
+      "pieces": ["start", "flat", "gap", "flat", "spikes", "platform", "stairs", "finish"]
     },
     {
       "name": "Level 2 - Watch Your Step",
-      "pieces": [
-        "start",
-        "spikes",
-        "gap",
-        "step",
-        "spikehill",
-        "platform",
-        "gap",
-        "flat",
-        "finish"
-      ]
+      "pieces": ["start", "spikes", "gap", "step", "spikehill", "platform", "gap", "flat", "finish"]
     },
     {
       "name": "Level 3 - Highrise",
-      "pieces": [
-        "start",
-        "spikes",
-        "spikehill",
-        "stairs",
-        "highflat",
-        "highspike",
-        "highplat",
-        "spikepit",
-        "finish"
-      ]
+      "pieces": ["start", "spikes", "spikehill", "stairs", "highflat", "highspike", "highplat", "spikepit", "finish"]
     },
     {
       "name": "Level 4 - Floorless",
-      "pieces": [
-        "start",
-        "platform",
-        "manygap",
-        "stairs",
-        "Nofloorplat",
-        "Nofloorplat2",
-        "Nofloorplat3",
-        "Nofloorplat4",
-        "Nofloorplat5",
-        "finish"
-      ]
+      "pieces": ["start", "platform", "manygap", "stairs", "Nofloorplat", "Nofloorplat2", "Nofloorplat3", "Nofloorplat4", "Nofloorplat5", "finish"]
+    },
+    {
+      "name": "Level 5 - The Gauntlet",
+      "pieces": ["start", "spikes", "gap", "platform", "spikehill", "manygap", "stairs", "highplat", "spikepit", "finish"]
     }
   ]
 }

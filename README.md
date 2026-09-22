@@ -1,5 +1,7 @@
 # ROLLSCAPE
 
+**ROLLSCAPE IS IN PRE-PRE-PRE-PRE-PRE ALPHA, VERY BUGGY, EXPECT CLUNKY GAMEPLAY**
+
 Welcome to your eternal prison.
 
 In this infinite dimension, you will be collecting tessaracts while avoiding enemies and surviving curses you have chosen. You can buy blessings to help you with tessaracts if you have the coin for it.

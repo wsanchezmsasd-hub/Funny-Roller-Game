@@ -7,7 +7,7 @@
     },
     {
       "name": "Level 2 - Watch Your Step",
-      "pieces": ["start", "spikes", "gap", "platform", "highplat", "highflat", "flat", "gap", "flat", "finish"]
+      "pieces": ["start", "spikes", "gap", "step", "highplat", "highflat", "flat", "gap", "flat", "finish"]
     },
     {
       "name": "Level 3 - Highrise",

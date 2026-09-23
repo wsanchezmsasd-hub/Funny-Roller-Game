@@ -14,12 +14,12 @@ You can fight enemies back with your weapons to take them down for a moment, but
 - E: use ability (if your weapon has one)
 ## ROSTER
 Enemies
-Green ball 4?
-Bouncy balls that occasionally jump towards you.
-Cuboid
-3 cubes move towards you; speed is  based on your distance
-Drill
-Dashes in your direction; keep out of its way
-Drone
-Moves above you, then fires a volley towards you
+- Green ball 4?
+- Bouncy balls that occasionally jump towards you.
+- Cuboid
+- 3 cubes move towards you; speed is  based on your distance
+- Drill
+- Dashes in your direction; keep out of its way
+- Drone
+- Moves above you, then fires a volley towards you
 

@@ -3,7 +3,7 @@
    ===================================================================== */
 var Level = {
   pieces: null, levels: null, grid: [], cols: 0, name: "", startX: 0, startY: 0,
-  redTesseracts: [], goldTesseracts: [], fakeTesseracts: [], goldActive: false, collapseActive: false, collapseTimer: 0, collapseWarning: 0, collapseColumn: -1
+  redTesseracts: [], goldTesseracts: [], fakeTesseracts: [], goldActive: false, collapseActive: false, collapseTimer: 0, collapseWarning: 0, collapseColumn: -1, collapseColumns: []
 };
 
 Level.loadData = function (whenDone) {
@@ -21,7 +21,7 @@ Level.loadData = function (whenDone) {
 
 Level.build = function (levelNumber) {
   var level = Level.getDefinition(levelNumber);
-  Level.name = level.name; Level.grid = []; Level.redTesseracts = []; Level.goldTesseracts = []; Level.fakeTesseracts = []; Level.goldActive = false; Level.collapseActive = false; Level.collapseTimer = 0; Level.collapseWarning = 0; Level.collapseColumn = -1; Level.cols = level.pieces.length * CONFIG.PIECE_COLS;
+  Level.name = level.name; Level.grid = []; Level.redTesseracts = []; Level.goldTesseracts = []; Level.fakeTesseracts = []; Level.goldActive = false; Level.collapseActive = false; Level.collapseTimer = 0; Level.collapseWarning = 0; Level.collapseColumn = -1; Level.collapseColumns = []; Level.cols = level.pieces.length * CONFIG.PIECE_COLS;
   for (var row = 0; row < CONFIG.ROWS; row++) { Level.grid.push(""); }
   for (var p = 0; p < level.pieces.length; p++) {
     var piece = Level.pieces[level.pieces[p]];
@@ -68,14 +68,31 @@ Level.placeTesseracts = function (pieceNames) {
 };
 
 Level.addTesseractSlots = function (spots) {
-  var fakeCount = Game.hasCurse("fiveCube") ? Math.min(5, spots.length) : 0;
-  for (var i = 0; i < spots.length; i++) {
-    if (i < fakeCount) Level.fakeTesseracts.push({ x: spots[i].x, y: spots[i].y });
-    else {
-      Level.redTesseracts.push({ x: spots[i].x, y: spots[i].y, collected: false });
-      Level.goldTesseracts.push({ x: spots[i].x, y: spots[i].y, collected: false });
-    }
+  var fakeCount = Game.hasCurse("fiveCube") ? Math.min(CONFIG.FIVE_CUBE_COUNT, spots.length) : 0;
+  var relocated = [];
+  for (var i = 0; i < fakeCount; i++) {
+    Level.fakeTesseracts.push({ x: spots[i].x, y: spots[i].y });
+    var replacement = Level.findTesseractSpot(spots.concat(relocated));
+    if (replacement) relocated.push(replacement);
   }
+  for (var j = fakeCount; j < spots.length; j++) {
+    Level.redTesseracts.push({ x: spots[j].x, y: spots[j].y, collected: false });
+    Level.goldTesseracts.push({ x: spots[j].x, y: spots[j].y, collected: false });
+  }
+  relocated.forEach(function (spot) {
+    Level.redTesseracts.push({ x: spot.x, y: spot.y, collected: false });
+    Level.goldTesseracts.push({ x: spot.x, y: spot.y, collected: false });
+  });
+};
+Level.findTesseractSpot = function (reserved) {
+  for (var col = 2; col < Level.cols - 2; col++) for (var row = 1; row < CONFIG.ROWS - 1; row++) {
+    var x = col * CONFIG.TILE + CONFIG.TILE / 2, y = row * CONFIG.TILE + CONFIG.TILE / 2;
+    if (Level.charAt(col, row) !== "." || Level.charAt(col, row - 1) !== "." || Level.isSpike(col, row + 1) || Level.isSpike(col, row)) continue;
+    if (reserved.some(function (spot) { return spot.x === x && spot.y === y; })) continue;
+    if (Level.redTesseracts.concat(Level.goldTesseracts).concat(Level.fakeTesseracts).some(function (spot) { return spot.x === x && spot.y === y; })) continue;
+    return { x: x, y: y };
+  }
+  return null;
 };
 Level.placeFakeTesseracts = function () {};
 
@@ -87,7 +104,7 @@ Level.updateTesseracts = function () {
   Level.redTesseracts.forEach(function (tesseract) {
     if (!tesseract.collected && Math.hypot(playerX - tesseract.x, playerY - tesseract.y) < collectionRange) tesseract.collected = true;
   });
-  if (!Level.goldActive && Level.redTesseracts.every(function (tesseract) { return tesseract.collected; })) { Level.goldActive = true; Level.collapseActive = true; Level.collapseTimer = Game.hasCurse("unstablePlain") ? 24 : 150; }
+  if (!Level.goldActive && Level.redTesseracts.every(function (tesseract) { return tesseract.collected; })) { Level.goldActive = true; Level.collapseActive = true; Level.collapseTimer = Game.hasCurse("unstablePlain") ? 24 : 90; }
   if (Level.goldActive) Level.goldTesseracts.forEach(function (tesseract) {
     if (!tesseract.collected && Math.hypot(playerX - tesseract.x, playerY - tesseract.y) < collectionRange) { tesseract.collected = true; Game.goldTesseracts++; }
   });
@@ -97,12 +114,18 @@ Level.updateCollapse = function () {
   if (!Level.collapseActive) return;
   Level.collapseTimer--;
   if (Level.collapseTimer > 0) return;
-  Level.collapseTimer = Game.hasCurse("unstablePlain") ? 24 : 150;
-  var column = Math.floor(Player.x / CONFIG.TILE) - 7;
-  while (column >= 0 && Level.columnHasTesseract(column)) column--;
-  if (column < 0 || column >= Level.cols) return;
+  Level.collapseTimer = Game.hasCurse("unstablePlain") ? 24 : 90;
+  var firstVisible = Math.max(0, Math.floor((typeof Draw !== "undefined" ? Draw.cameraX : Player.x) / CONFIG.TILE));
+  var visibleCount = Math.ceil(CONFIG.CANVAS_W / CONFIG.TILE);
+  var pairs = [];
+  for (var i = firstVisible; i < Math.min(Level.cols - 1, firstVisible + visibleCount); i++) {
+    if (!Level.columnHasTesseract(i) && !Level.columnHasTesseract(i + 1)) pairs.push([i, i + 1]);
+  }
+  if (!pairs.length) return;
+  Level.collapseColumns = pairs[Math.floor(Math.random() * pairs.length)];
+  var column = Level.collapseColumns[0];
   Level.collapseColumn = column;
-  Level.collapseWarning = 18;
+  Level.collapseWarning = 36;
 };
 Level.columnHasTesseract = function (column) {
   return Level.redTesseracts.concat(Level.goldTesseracts).concat(Level.fakeTesseracts).some(function (tesseract) { return Math.floor(tesseract.x / CONFIG.TILE) === column && !tesseract.collected; });
@@ -111,8 +134,10 @@ Level.finishCollapse = function () {
   if (Level.collapseWarning <= 0 || Level.collapseColumn < 0) return;
   Level.collapseWarning--;
   if (Level.collapseWarning > 0) return;
-  var column = Level.collapseColumn;
-  for (var row = 0; row < CONFIG.ROWS; row++) if (Level.isSolid(column, row)) Level.grid[row] = Level.grid[row].substring(0, column) + "." + Level.grid[row].substring(column + 1);
+  var columns = Level.collapseColumns.slice();
+  for (var c = 0; c < columns.length; c++) for (var row = 0; row < CONFIG.ROWS; row++) if (Level.isSolid(columns[c], row)) Level.grid[row] = Level.grid[row].substring(0, columns[c]) + "." + Level.grid[row].substring(columns[c] + 1);
+  Level.goldTesseracts = Level.goldTesseracts.filter(function (tesseract) { return columns.indexOf(Math.floor(tesseract.x / CONFIG.TILE)) < 0; });
+  Level.collapseColumns = [];
   Level.collapseColumn = -1;
 };
 

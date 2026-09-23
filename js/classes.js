@@ -4,7 +4,7 @@
 var Classes = {
   selected: null,
   weapons: {
-    bazooka: { name: "Bazooka", damage: 85, ammo: 3, reload: 360, description: "Heavy shots. Destroys terrain and launches you." },
+    bazooka: { name: "Bazooka", damage: 85, ammo: 3, reload: 500, description: "Heavy shots. Destroys terrain and launches you." },
     ak47: { name: "AK-47", damage: 7, ammo: 20, reload: 270, description: "Rapid fire. Throw it with right click; it returns and can deal 65 damage." },
     pistols: { name: "Pistols", damage: 4, ammo: 24, reload: 180, description: "Rapid fire. Right click to dash toward the mouse." }
   },

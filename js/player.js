@@ -1,8 +1,8 @@
 /* =====================================================================
    player.js  --  THE ROLLING CIRCLE.
    ===================================================================== */
-var Player = { x: 0, y: 0, vx: 0, vy: 0, onGround: false, angle: 0, classType: null, dashTimer: 0, dashCooldown: 0 };
-Player.reset = function () { Player.x = Level.startX; Player.y = Level.startY; Player.vx = 0; Player.vy = 0; Player.onGround = false; Player.angle = 0; Player.dashTimer = 0; Player.dashCooldown = 0; Player.fakeTesseractHit = false; };
+var Player = { x: 0, y: 0, vx: 0, vy: 0, onGround: false, coyoteTimer: 0, angle: 0, classType: null, dashTimer: 0, dashCooldown: 0 };
+Player.reset = function () { Player.x = Level.startX; Player.y = Level.startY; Player.vx = 0; Player.vy = 0; Player.onGround = false; Player.coyoteTimer = 0; Player.angle = 0; Player.dashTimer = 0; Player.dashCooldown = 0; Player.fakeTesseractHit = false; };
 Player.clampVelocity = function () {
   if (Player.vx > CONFIG.MAX_HORIZONTAL_SPEED) Player.vx = CONFIG.MAX_HORIZONTAL_SPEED;
   if (Player.vx < -CONFIG.MAX_HORIZONTAL_SPEED) Player.vx = -CONFIG.MAX_HORIZONTAL_SPEED;
@@ -32,12 +32,13 @@ Player.update = function () {
   if (Input.left) { Player.vx -= movement; }
   if (Input.right) { Player.vx += movement; }
   Player.clampVelocity();
-  if (Input.jump && Player.onGround) { Player.vy = -(CONFIG.JUMP_POWER + Game.blessings.jump * 2); Player.onGround = false; }
+  if (Player.coyoteTimer > 0) Player.coyoteTimer--;
+  if (Input.jump && (Player.onGround || Player.coyoteTimer > 0)) { Player.vy = -(CONFIG.JUMP_POWER + Game.blessings.jump * 2); Player.onGround = false; Player.coyoteTimer = 0; }
   Player.vy += CONFIG.GRAVITY * (Game.hasCurse("lowerGravity") ? 0.5 : 1); if (Player.vy > CONFIG.MAX_FALL) Player.vy = CONFIG.MAX_FALL;
   var stepX = Player.vx > 0 ? 1 : (Player.vx < 0 ? -1 : 0);
   for (var i = 0; i < Math.abs(Player.vx); i++) { if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) break; Player.x += stepX; Player.angle += stepX / CONFIG.PLAYER_RADIUS; }
   var stepY = Player.vy > 0 ? 1 : (Player.vy < 0 ? -1 : 0); Player.onGround = false;
-  for (var j = 0; j < Math.abs(Player.vy); j++) { if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) { if (stepY > 0) Player.onGround = true; Player.vy = 0; break; } Player.y += stepY; }
+  for (var j = 0; j < Math.abs(Player.vy); j++) { if (Collide.hitsSolid(Player.x, Player.y + stepY, size, size)) { if (stepY > 0) { Player.onGround = true; Player.coyoteTimer = CONFIG.COYOTE_TIME_FRAMES; } Player.vy = 0; break; } Player.y += stepY; }
   if (Player.x < 0) Player.x = 0;
   Player.clampVelocity();
 };

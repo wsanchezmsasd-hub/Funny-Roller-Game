@@ -58,7 +58,7 @@ Weapons.updateProjectiles = function () {
 };
 Weapons.updateBullet = function (projectile, index) {
   projectile.x += projectile.vx; projectile.y += projectile.vy; projectile.life--;
-  var hit = Enemy.damageAt(projectile.x, projectile.y, projectile.damage, 14);
+  var hit = projectile.kind === "bazooka" ? Enemy.damageAt(projectile.x, projectile.y, 0, 14) : Enemy.damageAt(projectile.x, projectile.y, projectile.damage, 14);
   if (hit || projectile.life <= 0) {
     if (projectile.kind === "bazooka") Weapons.explode(projectile.x, projectile.y);
     Weapons.projectiles.splice(index, 1);
@@ -68,6 +68,7 @@ Weapons.updateBullet = function (projectile, index) {
 };
 Weapons.explode = function (x, y) {
   Level.destroyCircle(x, y, CONFIG.BAZOOKA_BLAST_RADIUS);
+  Enemy.damageRadius(x, y, CONFIG.BAZOOKA_BLAST_RADIUS, CONFIG.CLASS_STATS.bazooka.damage);
   Weapons.explosions.push({ x: x, y: y, age: 0 });
 };
 Weapons.updateAk = function (projectile, index) {

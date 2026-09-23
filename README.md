@@ -22,4 +22,5 @@ Enemies
 - Dashes in your direction; keep out of its way
 - Drone
 - Moves above you, then fires a volley towards you
-
+-DOMINO
+-Dude...... copilot locked the hell out with this one

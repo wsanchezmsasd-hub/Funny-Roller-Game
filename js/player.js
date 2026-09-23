@@ -1,8 +1,8 @@
 /* =====================================================================
    player.js  --  THE ROLLING CIRCLE.
    ===================================================================== */
-var Player = { x: 0, y: 0, vx: 0, vy: 0, onGround: false, coyoteTimer: 0, angle: 0, classType: null, dashTimer: 0, dashCooldown: 0 };
-Player.reset = function () { Player.x = Level.startX; Player.y = Level.startY; Player.vx = 0; Player.vy = 0; Player.onGround = false; Player.coyoteTimer = 0; Player.angle = 0; Player.dashTimer = 0; Player.dashCooldown = 0; Player.fakeTesseractHit = false; };
+var Player = { x: 0, y: 0, vx: 0, vy: 0, onGround: false, coyoteTimer: 0, angle: 0, classType: null, dashTimer: 0, dashCooldown: 0, invincibilityTimer: 0 };
+Player.reset = function () { Player.x = Level.startX; Player.y = Level.startY; Player.vx = 0; Player.vy = 0; Player.onGround = false; Player.coyoteTimer = 0; Player.angle = 0; Player.dashTimer = 0; Player.dashCooldown = 0; Player.invincibilityTimer = 0; Player.fakeTesseractHit = false; };
 Player.clampVelocity = function () {
   if (Player.vx > CONFIG.MAX_HORIZONTAL_SPEED) Player.vx = CONFIG.MAX_HORIZONTAL_SPEED;
   if (Player.vx < -CONFIG.MAX_HORIZONTAL_SPEED) Player.vx = -CONFIG.MAX_HORIZONTAL_SPEED;
@@ -11,6 +11,7 @@ Player.clampVelocity = function () {
 };
 Player.update = function () {
   Weapons.update();
+  if (Player.invincibilityTimer > 0) Player.invincibilityTimer--;
   if (Player.dashCooldown > 0) Player.dashCooldown--;
   if (Player.dashTimer > 0) {
     var dashStepX = Player.vx > 0 ? 1 : -1, dashStepY = Player.vy > 0 ? 1 : -1;
@@ -43,5 +44,5 @@ Player.update = function () {
   if (Player.x < 0) Player.x = 0;
   Player.clampVelocity();
 };
-Player.isDead = function () { var spikeMargin = Game.levelNumber >= 2 ? CONFIG.LATER_LEVEL_SPIKE_MARGIN : 0; return Player.dashTimer <= 0 && (Player.fakeTesseractHit || Collide.hitsSpike(Player.x + spikeMargin, Player.y + spikeMargin, CONFIG.PLAYER_SIZE - spikeMargin * 2, CONFIG.PLAYER_SIZE - spikeMargin * 2) || Player.y > CONFIG.CANVAS_H + 200); };
+Player.isDead = function () { var spikeMargin = Game.levelNumber >= 2 ? CONFIG.LATER_LEVEL_SPIKE_MARGIN : 0; return Player.dashTimer <= 0 && Player.invincibilityTimer <= 0 && (Player.fakeTesseractHit || Collide.hitsSpike(Player.x + spikeMargin, Player.y + spikeMargin, CONFIG.PLAYER_SIZE - spikeMargin * 2, CONFIG.PLAYER_SIZE - spikeMargin * 2) || Player.y > CONFIG.CANVAS_H + 200); };
 Player.hasWon = function () { return Collide.hitsFinish(Player.x, Player.y, CONFIG.PLAYER_SIZE, CONFIG.PLAYER_SIZE); };

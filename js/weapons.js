@@ -61,7 +61,7 @@ Weapons.fire = function () {
 Weapons.useAbility = function () {
   if (Player.classType === "katana") {
     if (Weapons.parryCooldown > 0 || Weapons.parryTimer > 0) return;
-    Weapons.parryTimer = CONFIG.KATANA_PARRY_WINDOW + 1;
+    Weapons.parryTimer = CONFIG.KATANA_PARRY_WINDOW;
     Weapons.parryResolved = false;
     return;
   }
@@ -83,6 +83,7 @@ Weapons.parryBodyHit = function () {
   Weapons.parryResolved = true;
   Weapons.parryTimer = 0;
   Weapons.parryCooldown = CONFIG.KATANA_PARRY_HIT_COOLDOWN;
+  Player.invincibilityTimer = CONFIG.KATANA_PARRY_INVINCIBILITY;
   Player.vy = -CONFIG.KATANA_PARRY_LAUNCH;
   return true;
 };
@@ -96,6 +97,7 @@ Weapons.parryProjectile = function (bullet) {
   Weapons.parryResolved = true;
   Weapons.parryTimer = 0;
   Weapons.parryCooldown = CONFIG.KATANA_PARRY_HIT_COOLDOWN;
+  Player.invincibilityTimer = CONFIG.KATANA_PARRY_INVINCIBILITY;
   return true;
 };
 Weapons.updateProjectiles = function () {

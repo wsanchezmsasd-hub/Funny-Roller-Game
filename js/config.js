@@ -80,8 +80,8 @@ var CONFIG = {
   BLESSING_COSTS: { jump: 3, ammo: 3, speed: 3, dash: 4, magnet: 4 },
 
   // Collapse timing is measured in frames (60 frames = 1 second).
-  COLLAPSE_INTERVAL: 150,
-  COLLAPSE_WARNING_FRAMES: 18,
+  COLLAPSE_INTERVAL: 40,
+  COLLAPSE_WARNING_FRAMES: 25,
 
   // Values used by curses.js. These are deliberately separate from the
   // normal tuning values so a curse can be changed without hunting through

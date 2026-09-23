@@ -28,13 +28,14 @@ Player.update = function () {
   }
   var size = CONFIG.PLAYER_SIZE;
   if (!Input.left && !Input.right) { Player.vx *= 0.95; }
-  var movement = (CONFIG.MOVE_SPEED + Game.blessings.speed * 0.05) * (Game.hasCurse("roughEdging") ? 0.9 : 1);
+  var movement = (CONFIG.MOVE_SPEED + Game.blessings.speed * CONFIG.BLESSING_EFFECTS.moveAcceleration) * Math.pow(CONFIG.CURSES.roughEdging.movementMultiplier, Game.curseCount("roughEdging")) * (Weapons.parrySlowTimer > 0 ? CONFIG.KATANA_PARRY_SLOW_MULTIPLIER : 1);
   if (Input.left) { Player.vx -= movement; }
   if (Input.right) { Player.vx += movement; }
   Player.clampVelocity();
   if (Player.coyoteTimer > 0) Player.coyoteTimer--;
-  if (Input.jump && (Player.onGround || Player.coyoteTimer > 0)) { Player.vy = -(CONFIG.JUMP_POWER + Game.blessings.jump * 2); Player.onGround = false; Player.coyoteTimer = 0; }
-  Player.vy += CONFIG.GRAVITY * (Game.hasCurse("lowerGravity") ? 0.5 : 1); if (Player.vy > CONFIG.MAX_FALL) Player.vy = CONFIG.MAX_FALL;
+  var jumpPower = CONFIG.JUMP_POWER + Game.blessings.jump * CONFIG.BLESSING_EFFECTS.jumpPower + (Game.levelNumber >= 2 ? CONFIG.LATER_LEVEL_JUMP_BONUS : 0);
+  if (Input.jump && (Player.onGround || Player.coyoteTimer > 0)) { Player.vy = -jumpPower; Player.onGround = false; Player.coyoteTimer = 0; }
+  Player.vy += CONFIG.GRAVITY * Math.pow(CONFIG.CURSES.lowerGravity.gravityMultiplier, Game.curseCount("lowerGravity")); if (Player.vy > CONFIG.MAX_FALL) Player.vy = CONFIG.MAX_FALL;
   var stepX = Player.vx > 0 ? 1 : (Player.vx < 0 ? -1 : 0);
   for (var i = 0; i < Math.abs(Player.vx); i++) { if (Collide.hitsSolid(Player.x + stepX, Player.y, size, size)) break; Player.x += stepX; Player.angle += stepX / CONFIG.PLAYER_RADIUS; }
   var stepY = Player.vy > 0 ? 1 : (Player.vy < 0 ? -1 : 0); Player.onGround = false;
@@ -42,5 +43,5 @@ Player.update = function () {
   if (Player.x < 0) Player.x = 0;
   Player.clampVelocity();
 };
-Player.isDead = function () { return Player.dashTimer <= 0 && (Player.fakeTesseractHit || Collide.hitsSpike(Player.x, Player.y, CONFIG.PLAYER_SIZE, CONFIG.PLAYER_SIZE) || Player.y > CONFIG.CANVAS_H + 200); };
+Player.isDead = function () { var spikeMargin = Game.levelNumber >= 2 ? CONFIG.LATER_LEVEL_SPIKE_MARGIN : 0; return Player.dashTimer <= 0 && (Player.fakeTesseractHit || Collide.hitsSpike(Player.x + spikeMargin, Player.y + spikeMargin, CONFIG.PLAYER_SIZE - spikeMargin * 2, CONFIG.PLAYER_SIZE - spikeMargin * 2) || Player.y > CONFIG.CANVAS_H + 200); };
 Player.hasWon = function () { return Collide.hitsFinish(Player.x, Player.y, CONFIG.PLAYER_SIZE, CONFIG.PLAYER_SIZE); };

@@ -7,7 +7,7 @@
     },
     {
       "name": "Level 2 - Watch Your Step",
-      "pieces": ["start", "spikes", "gap", "platform", "highplat", "spikehill", "flat", "gap", "flat", "finish"]
+      "pieces": ["start", "spikes", "gap", "platform", "highplat", "highflat", "flat", "gap", "flat", "finish"]
     },
     {
       "name": "Level 3 - Highrise",
@@ -15,7 +15,7 @@
     },
     {
       "name": "Level 4 - Floorless",
-      "pieces": ["start", "platform", "manygap", "stairs", "Nofloorplat", "highplat", "Nofloorplat2", "Nofloorplat3", "Nofloorplat4", "Nofloorplat5", "finish"]
+      "pieces": ["start", "platform", "manygap", "stairs", "Nofloorplat", "Nofloorplat2", "Nofloorplat3", "Nofloorplat4", "Nofloorplat5", "finish"]
     },
     {
       "name": "Level 5 - The Gauntlet",

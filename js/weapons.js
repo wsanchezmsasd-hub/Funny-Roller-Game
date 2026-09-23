@@ -1,24 +1,40 @@
 /* Player classes, projectiles, ammo, and class abilities. */
-var Weapons = { ammo: 0, reloadTimer: 0, fireCooldown: 0, projectiles: [], explosions: [], abilityWasDown: false, fireWasDown: false };
+var Weapons = { ammo: 0, reloadTimer: 0, fireCooldown: 0, parryTimer: 0, parryCooldown: 0, parrySlowTimer: 0, parryResolved: false, projectiles: [], explosions: [], slashes: [], abilityWasDown: false, fireWasDown: false };
 Weapons.reset = function () {
   var stats = CONFIG.CLASS_STATS[Player.classType];
-  Weapons.ammo = stats ? stats.ammo + Game.blessings.ammo * 2 : 0;
+  Weapons.ammo = stats ? stats.ammo + Game.blessings.ammo * CONFIG.BLESSING_EFFECTS.ammoBonus : 0;
   Weapons.reloadTimer = 0;
   Weapons.fireCooldown = 0;
+  Weapons.parryTimer = 0;
+  Weapons.parryCooldown = 0;
+  Weapons.parrySlowTimer = 0;
+  Weapons.parryResolved = false;
   Weapons.projectiles = [];
   Weapons.explosions = [];
+  Weapons.slashes = [];
   Weapons.abilityWasDown = false;
   Weapons.fireWasDown = false;
 };
 Weapons.update = function () {
   if (!Player.classType) return;
   if (Weapons.fireCooldown > 0) Weapons.fireCooldown--;
-  if (Weapons.reloadTimer > 0) { Weapons.reloadTimer--; if (Weapons.reloadTimer === 0) Weapons.ammo = CONFIG.CLASS_STATS[Player.classType].ammo + Game.blessings.ammo * 2; }
-  if (Input.mouseDown && !Weapons.fireWasDown) Weapons.fire();
+  if (Weapons.parryCooldown > 0) Weapons.parryCooldown--;
+  if (Weapons.parrySlowTimer > 0) Weapons.parrySlowTimer--;
+  if (Weapons.parryTimer > 0) {
+    Weapons.parryTimer--;
+    if (Weapons.parryTimer === 0 && !Weapons.parryResolved) {
+      Weapons.parrySlowTimer = CONFIG.KATANA_PARRY_SLOW_TIME;
+      Weapons.parryCooldown = CONFIG.KATANA_PARRY_MISS_COOLDOWN;
+      Weapons.parryResolved = true;
+    }
+  }
+  if (Weapons.reloadTimer > 0) { Weapons.reloadTimer--; if (Weapons.reloadTimer === 0) Weapons.ammo = CONFIG.CLASS_STATS[Player.classType].ammo + Game.blessings.ammo * CONFIG.BLESSING_EFFECTS.ammoBonus; }
+  if (Player.classType === "katana" ? Input.mouseDown : Input.mouseDown && !Weapons.fireWasDown) Weapons.fire();
   if (Input.ability && !Weapons.abilityWasDown) Weapons.useAbility();
   Weapons.fireWasDown = Input.mouseDown;
   Weapons.abilityWasDown = Input.ability;
   Weapons.updateProjectiles();
+  for (var s = Weapons.slashes.length - 1; s >= 0; s--) { Weapons.slashes[s].age++; if (Weapons.slashes[s].age > 8) Weapons.slashes.splice(s, 1); }
   for (var i = Weapons.explosions.length - 1; i >= 0; i--) {
     Weapons.explosions[i].age++;
     if (Weapons.explosions[i].age > CONFIG.BAZOOKA_EXPLOSION_TIME) Weapons.explosions.splice(i, 1);
@@ -26,15 +42,29 @@ Weapons.update = function () {
 };
 Weapons.fire = function () {
   var stats = CONFIG.CLASS_STATS[Player.classType];
-  if (!stats || Weapons.reloadTimer > 0 || Weapons.ammo <= 0 || Weapons.fireCooldown > 0) return;
+  if (!stats || Weapons.reloadTimer > 0 || Weapons.fireCooldown > 0) return;
+  if (Player.classType === "katana") {
+    var slashDx = Input.mouseX - (Player.x + CONFIG.PLAYER_SIZE / 2), slashDy = Input.mouseY - (Player.y + CONFIG.PLAYER_SIZE / 2), slashDistance = Math.hypot(slashDx, slashDy) || 1;
+    Enemy.damageAt(Player.x + CONFIG.PLAYER_SIZE / 2 + slashDx / slashDistance * CONFIG.KATANA_SLASH_RANGE, Player.y + CONFIG.PLAYER_SIZE / 2 + slashDy / slashDistance * CONFIG.KATANA_SLASH_RANGE, stats.damage, CONFIG.KATANA_SLASH_REACH);
+    Weapons.slashes.push({ angle: Math.atan2(slashDy, slashDx), age: 0 });
+    Weapons.fireCooldown = CONFIG.KATANA_SLASH_COOLDOWN;
+    return;
+  }
+  if (stats.ammo === 0) return;
   Weapons.ammo--;
   var startX = Player.x + CONFIG.PLAYER_SIZE / 2, startY = Player.y + CONFIG.PLAYER_SIZE / 2;
   var dx = Input.mouseX - startX, dy = Input.mouseY - startY, distance = Math.hypot(dx, dy) || 1;
-  Weapons.projectiles.push({ kind: Player.classType === "ak47" ? "akBullet" : Player.classType, x: startX, y: startY, vx: dx / distance * CONFIG.WEAPON_PROJECTILE_SPEED, vy: dy / distance * CONFIG.WEAPON_PROJECTILE_SPEED, damage: stats.damage, life: 90 });
+  Weapons.projectiles.push({ kind: Player.classType === "ak47" ? "akBullet" : Player.classType, x: startX, y: startY, vx: dx / distance * CONFIG.WEAPON_PROJECTILE_SPEED, vy: dy / distance * CONFIG.WEAPON_PROJECTILE_SPEED, damage: stats.damage, life: CONFIG.WEAPON_PROJECTILE_LIFE });
   if (Weapons.ammo === 0) Weapons.reloadTimer = CONFIG.WEAPON_RELOAD_FRAMES[Player.classType];
   if (Player.classType === "bazooka") Weapons.fireCooldown = CONFIG.BAZOOKA_FIRE_COOLDOWN;
 };
 Weapons.useAbility = function () {
+  if (Player.classType === "katana") {
+    if (Weapons.parryCooldown > 0 || Weapons.parryTimer > 0) return;
+    Weapons.parryTimer = CONFIG.KATANA_PARRY_WINDOW + 1;
+    Weapons.parryResolved = false;
+    return;
+  }
   if (Player.classType === "ak47") {
     if (Weapons.projectiles.some(function (p) { return p.kind === "ak"; })) return;
     var throwX = Player.x + CONFIG.PLAYER_SIZE / 2, throwY = Player.y + CONFIG.PLAYER_SIZE / 2;
@@ -46,7 +76,27 @@ Weapons.useAbility = function () {
   var dx = Input.mouseX - (Player.x + CONFIG.PLAYER_SIZE / 2), dy = Input.mouseY - (Player.y + CONFIG.PLAYER_SIZE / 2), distance = Math.hypot(dx, dy) || 1;
   Player.vx = dx / distance * CONFIG.PISTOL_DASH_SPEED;
   Player.vy = dy / distance * CONFIG.PISTOL_DASH_SPEED;
-  Player.dashTimer = CONFIG.PISTOL_DASH_TIME + Game.blessings.dash * 6;
+  Player.dashTimer = CONFIG.PISTOL_DASH_TIME + Game.blessings.dash * CONFIG.BLESSING_EFFECTS.dashFrames;
+};
+Weapons.parryBodyHit = function () {
+  if (Player.classType !== "katana" || Weapons.parryTimer <= 0 || Weapons.parryResolved) return false;
+  Weapons.parryResolved = true;
+  Weapons.parryTimer = 0;
+  Weapons.parryCooldown = CONFIG.KATANA_PARRY_HIT_COOLDOWN;
+  Player.vy = -CONFIG.KATANA_PARRY_LAUNCH;
+  return true;
+};
+Weapons.parryProjectile = function (bullet) {
+  if (Player.classType !== "katana" || Weapons.parryTimer <= 0 || Weapons.parryResolved) return false;
+  var length = Math.hypot(bullet.vx, bullet.vy) || 1, speed = length * CONFIG.KATANA_PARRY_REFLECT_SPEED;
+  bullet.vx = -bullet.vx / length * speed;
+  bullet.vy = -bullet.vy / length * speed;
+  bullet.reflected = true;
+  bullet.damage = 25;
+  Weapons.parryResolved = true;
+  Weapons.parryTimer = 0;
+  Weapons.parryCooldown = CONFIG.KATANA_PARRY_HIT_COOLDOWN;
+  return true;
 };
 Weapons.updateProjectiles = function () {
   for (var i = Weapons.projectiles.length - 1; i >= 0; i--) {
@@ -58,7 +108,7 @@ Weapons.updateProjectiles = function () {
 };
 Weapons.updateBullet = function (projectile, index) {
   projectile.x += projectile.vx; projectile.y += projectile.vy; projectile.life--;
-  var hit = projectile.kind === "bazooka" ? Enemy.damageAt(projectile.x, projectile.y, 0, 14) : Enemy.damageAt(projectile.x, projectile.y, projectile.damage, 14);
+  var hit = projectile.kind === "bazooka" ? Enemy.damageAt(projectile.x, projectile.y, 0, CONFIG.WEAPON_HIT_REACH) : Enemy.damageAt(projectile.x, projectile.y, projectile.damage, CONFIG.WEAPON_HIT_REACH);
   if (hit || projectile.life <= 0) {
     if (projectile.kind === "bazooka") Weapons.explode(projectile.x, projectile.y);
     Weapons.projectiles.splice(index, 1);
@@ -73,11 +123,11 @@ Weapons.explode = function (x, y) {
 };
 Weapons.updateAk = function (projectile, index) {
   var playerX = Player.x + CONFIG.PLAYER_SIZE / 2, playerY = Player.y + CONFIG.PLAYER_SIZE / 2;
-  if (!projectile.returning && (projectile.age > CONFIG.AK_RETURN_TIME || Enemy.damageAt(projectile.x, projectile.y, CONFIG.AK_THROW_DAMAGE, 18))) projectile.returning = true;
+  if (!projectile.returning && (projectile.age > CONFIG.AK_RETURN_TIME || Enemy.damageAt(projectile.x, projectile.y, CONFIG.AK_THROW_DAMAGE, CONFIG.WEAPON_HIT_REACH))) projectile.returning = true;
   if (projectile.returning) {
     var dx = playerX - projectile.x, dy = playerY - projectile.y, distance = Math.hypot(dx, dy) || 1;
     projectile.vx = dx / distance * CONFIG.AK_THROW_SPEED; projectile.vy = dy / distance * CONFIG.AK_THROW_SPEED;
-    if (distance < 22) { Player.vy = -8; Weapons.projectiles.splice(index, 1); return; }
+    if (distance < CONFIG.AK_CATCH_DISTANCE) { Player.vy = CONFIG.AK_CATCH_LAUNCH; Weapons.projectiles.splice(index, 1); return; }
   }
   projectile.x += projectile.vx; projectile.y += projectile.vy;
 };

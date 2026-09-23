@@ -10,7 +10,12 @@
 
 Draw.setup();
 
+window.addEventListener("error", function (event) {
+  var message = document.getElementById("message");
+  if (message) message.textContent = "Game error: " + event.message;
+});
+
 Level.loadData(function () {
-  Game.startLevel(CONFIG.START_LEVEL);
+  Game.startRound();
   Game.loop();
 });

@@ -1,6 +1,6 @@
 /* =====================================================================
    config.js -- ALL THE NUMBERS.
-   Change the values in the ENEMIES section to tune enemy difficulty.
+   Change values here to tune the game, including individual curses.
    ===================================================================== */
 var CONFIG = {
   TILE: 40,
@@ -84,6 +84,24 @@ var CONFIG = {
   GOLD_TESSERACTS_PER_LEVEL: 8,
   FIVE_CUBE_COUNT: 2,
   BLESSING_COSTS: { jump: 3, ammo: 3, speed: 3, dash: 4, magnet: 4 },
+
+  // Collapse timing is measured in frames (60 frames = 1 second).
+  COLLAPSE_INTERVAL: 40,
+  COLLAPSE_WARNING_FRAMES: 25,
+
+  // Values used by curses.js. These are deliberately separate from the
+  // normal tuning values so a curse can be changed without hunting through
+  // gameplay code.
+  CURSES: {
+    roughEdging: { movementMultiplier: 0.90 },
+    lowerGravity: { gravityMultiplier: 0.50 },
+    unstablePlain: { collectionMultiplier: 2, collapseFrames: 24 },
+    wearAndTear: { damageMultiplier: 0.75 },
+    fiveCube: { fakeTesseracts: 5 },
+    batteryLife: { extraDrillDash: true },
+    unknownDimension: { allowCuboidMerge: true },
+    shotgunSlug: { focusedShot: true }
+  },
 
   START_LEVEL: 0
 };

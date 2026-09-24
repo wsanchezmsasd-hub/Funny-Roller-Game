@@ -8,7 +8,7 @@ var Enemy = {
     { type: "drone", name: "Drone", description: "25 HP. Respawns after 3.5 seconds and fires short, slow bursts." },
     { type: "drill", name: "Drill", description: "45 HP. Respawns after 2 seconds, then locks on and dashes." },
     { type: "greenBall4", name: "Green ball 4", description: "Two 15 HP balls respawn after 1.25 seconds and leap toward you." },
-    { type: "domino", name: "Domino", description: "An unkillable 3x6 domino that tilts and leans toward you." }
+    { type: "domino", name: "Domino", description: "An unkillable giant slab. Crouches, leaps high, and slams down near you, sending out a shockwave." }
   ]
 };
 Enemy.isType = function (type, wanted) { return type === wanted || (wanted === "cuboid" && type === "cuobid") || (wanted === "drill" && type === "evilSpike"); };
@@ -36,7 +36,48 @@ Enemy.spawnType = function (type, x, y) {
 Enemy.makeEnemy = function (type, x, y, radius, hp, respawnFrames) { return { type: type, x: x, y: y, spawnX: x, spawnY: y, vx: 0, vy: 0, state: "windup", timer: 0, shotTimer: 0, burstShots: 0, fireTimer: 0, radius: radius, angle: 0, targetAngle: 0, hp: hp, maxHp: hp, respawnFrames: respawnFrames, deadTimer: 0, jumpTimer: CONFIG.GREEN_BALL_JUMP_INTERVAL, grounded: false, combined: false, windup: CONFIG.ENEMY_WINDUP_FRAMES }; };
 Enemy.randomChoices = function () { var pool = Enemy.choices.slice(), result = []; while (result.length < 3 && pool.length) result.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); return result; };
 Enemy.update = function () { if (!Enemy.types.length) return; for (var i = 0; i < Enemy.enemies.length; i++) { var e = Enemy.enemies[i]; if (e.deadTimer > 0) { e.deadTimer--; if (e.deadTimer === 0) { var point = Enemy.randomSpawnPoint(e.radius); e.hp = e.maxHp; e.x = point.x; e.y = point.y; e.spawnX = e.x; e.spawnY = e.y; e.vx = 0; e.vy = 0; e.state = "windup"; e.timer = 0; e.grounded = false; e.windup = CONFIG.ENEMY_WINDUP_FRAMES; } continue; } if (e.state === "windup") { e.windup--; if (e.windup > 0) continue; e.state = "approach"; } if (e.type === "cuboid") Enemy.updateCuboid(e); if (e.type === "drone") Enemy.updateDrone(e); if (e.type === "drill") Enemy.updateDrill(e); if (e.type === "greenBall4") Enemy.updateGreenBall(e); if (e.type === "domino") Enemy.updateDomino(e); } if (Game.curseCount("unknownDimension") > 0 && CONFIG.CURSES.unknownDimension.allowCuboidMerge) Enemy.tryCombineCuboids(); Enemy.updateBullets(); };
-Enemy.updateDomino = function (e) { var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x, dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y, distance = Math.hypot(dx, dy) || 1; e.x += dx / distance * CONFIG.DOMINO_SPEED; e.y += dy / distance * CONFIG.DOMINO_SPEED; e.angle = Math.atan2(dy, dx) * 0.22; };
+Enemy.updateDomino = function (e) {
+  if (e.leapState === undefined) { e.leapState = "grounded"; e.leapTimer = CONFIG.DOMINO_GROUND_PAUSE_FRAMES; e.squash = 0; }
+  var halfW = CONFIG.DOMINO_WIDTH / 2, halfH = CONFIG.DOMINO_HEIGHT / 2;
+  e.vy += CONFIG.GRAVITY;
+  if (e.vy > CONFIG.MAX_FALL) e.vy = CONFIG.MAX_FALL;
+  var nextY = e.y + e.vy;
+  if (Collide.hitsSolid(e.x - halfW, nextY - halfH, CONFIG.DOMINO_WIDTH, CONFIG.DOMINO_HEIGHT)) {
+    if (e.vy > 0) { e.y = Math.floor((nextY + halfH) / CONFIG.TILE) * CONFIG.TILE - halfH; if (e.leapState === "airborne") Enemy.dominoLand(e); e.grounded = true; }
+    else if (e.vy < 0) { e.y = (Math.floor((nextY - halfH) / CONFIG.TILE) + 1) * CONFIG.TILE + halfH; }
+    e.vy = 0;
+  } else { e.y = nextY; e.grounded = false; }
+  if (!Collide.hitsSolid(e.x - halfW + e.vx, e.y - halfH, CONFIG.DOMINO_WIDTH, CONFIG.DOMINO_HEIGHT)) e.x += e.vx; else e.vx = 0;
+
+  if (e.leapState === "grounded") {
+    e.squash *= 0.8; e.angle *= 0.8;
+    if (e.grounded) { e.leapTimer--; if (e.leapTimer <= 0) { e.leapState = "crouch"; e.leapTimer = CONFIG.DOMINO_TELEGRAPH_FRAMES; } }
+  } else if (e.leapState === "crouch") {
+    e.squash = 1 - e.leapTimer / CONFIG.DOMINO_TELEGRAPH_FRAMES; e.leapTimer--;
+    if (e.leapTimer <= 0) {
+      var offset = (Math.random() * 2 - 1) * CONFIG.DOMINO_LEAP_RANGE;
+      e.targetX = Math.max(halfW, Math.min(Level.pixelWidth() - halfW, Player.x + CONFIG.PLAYER_SIZE / 2 + offset));
+      var airFrames = Math.max(1, Math.round(2 * CONFIG.DOMINO_JUMP_SPEED / CONFIG.GRAVITY));
+      e.vx = (e.targetX - e.x) / airFrames; e.vy = -CONFIG.DOMINO_JUMP_SPEED; e.grounded = false; e.leapState = "airborne"; e.squash = 0;
+    }
+  } else if (e.leapState === "airborne") {
+    e.angle = Math.atan2(e.vy, e.vx) * 0.25;
+    e.squash = -Math.min(1, Math.abs(e.vy) / CONFIG.DOMINO_JUMP_SPEED) * 0.3;
+  } else if (e.leapState === "landed") {
+    e.squash = e.leapTimer / CONFIG.DOMINO_SHOCKWAVE_LIFE; e.leapTimer--;
+    if (e.leapTimer <= 0) { e.leapState = "grounded"; e.leapTimer = CONFIG.DOMINO_GROUND_PAUSE_FRAMES; e.vx = 0; e.squash = 0; }
+  }
+};
+Enemy.dominoLand = function (e) {
+  e.leapState = "landed"; e.leapTimer = CONFIG.DOMINO_SHOCKWAVE_LIFE; e.vx = 0;
+  var px = Player.x + CONFIG.PLAYER_SIZE / 2, py = Player.y + CONFIG.PLAYER_SIZE / 2;
+  var dx = px - e.x, dy = py - e.y, distance = Math.hypot(dx, dy) || 1;
+  if (distance < CONFIG.DOMINO_SHOCKWAVE_RADIUS) {
+    var force = CONFIG.DOMINO_SHOCKWAVE_FORCE * (1 - distance / CONFIG.DOMINO_SHOCKWAVE_RADIUS);
+    Player.vx += dx / distance * force;
+    Player.vy += dy / distance * force - force * 0.35;
+  }
+};
 Enemy.tryCombineCuboids = function () { var cuboids = Enemy.enemies.filter(function (e) { return e.type === "cuboid" && !e.combined; }); if (cuboids.length < CONFIG.CUOBID_GROUP_SIZE) return; var cx = 0, cy = 0; cuboids.forEach(function (e) { cx += e.x; cy += e.y; }); cx /= cuboids.length; cy /= cuboids.length; if (!cuboids.every(function (e) { return Math.hypot(e.x - cx, e.y - cy) < CONFIG.CUOBID_MERGE_DISTANCE; })) return; Enemy.enemies = Enemy.enemies.filter(function (e) { return e.type !== "cuboid" || e.combined; }); Enemy.enemies.push({ type: "cuboid", x: cx, y: cy, vx: 0, vy: 0, radius: CONFIG.CUOBID_SIZE / 2 * Math.sqrt(cuboids.length), angle: 0, combined: true, state: "approach", deadTimer: 0, hp: Infinity, maxHp: Infinity, respawnFrames: 0 }); };
 Enemy.updateCuboid = function (e) { var dx = Player.x - e.x, dy = Player.y - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1, speed = Math.min(CONFIG.CUOBID_MAX_SPEED, CONFIG.CUOBID_SPEED + distance * CONFIG.CUOBID_DISTANCE_SPEED); e.x += dx / distance * speed + e.vx; e.y += dy / distance * speed + e.vy; e.vx *= 0.97; e.vy *= 0.97; e.angle += 0.025; };
 Enemy.updateDrone = function (e) { e.timer++; if (e.fireTimer > 0) e.fireTimer--; var firing = e.burstShots > 0 || e.fireTimer > 0, followRate = firing ? CONFIG.DRONE_FOLLOW_RATE * CONFIG.DRONE_FIRE_MOVE_FACTOR : CONFIG.DRONE_FAST_FOLLOW_RATE; e.x += (Player.x - e.x) * followRate; e.y += (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER - e.y) * followRate; e.shotTimer--; if (e.shotTimer <= 0 && e.burstShots > 0) { var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x, dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1, bulletSpeed = Game.hasCurse("shotgunSlug") ? CONFIG.CURSES.shotgunSlug.bulletSpeed : CONFIG.DRONE_BULLET_SPEED; Enemy.bullets.push({ x: e.x, y: e.y, vx: dx / distance * bulletSpeed, vy: dy / distance * bulletSpeed, life: CONFIG.DRONE_BULLET_LIFE }); e.burstShots--; e.shotTimer = Game.hasCurse("shotgunSlug") ? CONFIG.DRONE_BURST_COOLDOWN : (e.burstShots ? CONFIG.DRONE_SHOT_INTERVAL : CONFIG.DRONE_BURST_COOLDOWN); } else if (e.shotTimer <= 0 && e.burstShots === 0) { e.burstShots = Game.hasCurse("shotgunSlug") ? 1 : CONFIG.DRONE_SHOTS; e.fireTimer = CONFIG.DRONE_FIRE_TIME; e.shotTimer = 1; } };

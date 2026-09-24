@@ -138,11 +138,28 @@ Level.finishCollapse = function () {
   if (Level.collapseWarning <= 0 || Level.collapseColumn < 0) return;
   Level.collapseWarning--;
   if (Level.collapseWarning > 0) return;
+
   var columns = Level.collapseColumns.slice();
-  for (var c = 0; c < columns.length; c++) for (var row = 0; row < CONFIG.ROWS; row++) if (Level.isSolid(columns[c], row)) Level.grid[row] = Level.grid[row].substring(0, columns[c]) + "." + Level.grid[row].substring(columns[c] + 1);
+  
+  for (var row = 0; row < CONFIG.ROWS; row++) {
+    // Convert the map row into a clean array of single characters
+    var rowChars = Level.grid[row].split("");
+    
+    // Clear out both standard blocks and spikes on the collapsing columns
+    columns.forEach(function (col) {
+      if (col >= 0 && col < Level.cols) {
+        rowChars[col] = "."; 
+      }
+    });
+    
+    // Stitch the characters back into your level grid string
+    Level.grid[row] = rowChars.join("");
+  }
+
   Level.collapseColumns = [];
   Level.collapseColumn = -1;
 };
+
 
 Level.findStart = function () {
   for (var row = 0; row < CONFIG.ROWS; row++) for (var col = 0; col < Level.cols; col++) {

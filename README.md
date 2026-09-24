@@ -1,17 +1,16 @@
 # ROLLSCAPE
 
-**ROLLSCAPE IS IN PRE-PRE-PRE-PRE-PRE ALPHA, VERY BUGGY, EXPECT CLUNKY GAMEPLAY**
+**ROLLSCAPE IS IN PRE-PRE ALPHA, VERY BUGGY, EXPECT CLUNKY GAMEPLAY**
 
 Welcome to your eternal prison.
 
-In this infinite dimension, you will be collecting tessaracts while avoiding enemies and surviving curses you have chosen. You can buy blessings to help you with tessaracts if you have the coin for it.
-You can fight enemies back with your weapons to take them down for a moment, but they will always respawn.
+Fight for your life in this endless plane. You have 4 classes to choose from to help you survive and escape to the finish. You should also use them to fight back with your weapons to take them down for a moment, but they will always respawn.
 ## How to survive
 
 - W / D - roll
 - SPACE or UP arrow - jump
-- M1: use weapon (Bazooka, AK, Sidearms)
-- E: use ability (if your weapon has one)
+- M1: use weapon (Bazooka, AK, pistol, Katana)
+- E: use ability (AK, pistol, Katana)
 ## ROSTER
 Enemies
 - Green ball 4?
@@ -22,5 +21,5 @@ Enemies
 - Dashes in your direction; keep out of its way
 - Drone
 - Moves above you, then fires a volley towards you
--DOMINO
--Dude...... copilot locked the hell out with this one
+- DOMINO
+- Dude...... Copilot locked the hell out with this one

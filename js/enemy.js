@@ -1,4 +1,4 @@
-/* ===================================================================== 
+/* =====================================================================
    enemy.js -- ENEMIES AND THEIR PROJECTILES.
    ===================================================================== */
 var Enemy = {
@@ -163,4 +163,13 @@ Enemy.damageRadius = function (x, y, radius, damage) {
     }
   }
 };
-Enemy.hitsPlayer = function () { var px = Player.x + CONFIG.PLAYER_SIZE / 2, py = Player.y + CONFIG.PLAYER_SIZE / 2; for (var i = 0; i < Enemy.enemies.length; i++) { var e = Enemy.enemies[i]; if (e.deadTimer > 0 || e.state === "windup") continue; var dx = px - e.x, dy = py - e.y, reach = e.radius + CONFIG.PLAYER_SIZE / 2; if (dx * dx + dy * dy < reach * reach) { if (Weapons.parryBodyHit() || Player.invincibilityTimer > 0) continue; return true; } } for (var j = Enemy.bullets.length - 1; j >= 0; j--) { var b = Enemy.bullets[j], bx = px - b.x, by = py - b.y; if (bx * bx + by * by < 18 * 18) { if (Weapons.parryProjectile(b) || Player.invincibilityTimer > 0) continue; if (!b.reflected) return true; } } return false; };
+Enemy.dominoCrushesPlayer = function (e) {
+  var justLanded = e.leapState === "landed" && e.leapTimer >= CONFIG.DOMINO_SHOCKWAVE_LIFE - 1;
+  if (e.leapState !== "airborne" && !justLanded) return false;
+  if (e.vy < 0) return false;
+  var halfW = CONFIG.DOMINO_WIDTH / 2, halfH = CONFIG.DOMINO_HEIGHT / 2;
+  var overlapX = Math.abs((Player.x + CONFIG.PLAYER_SIZE / 2) - e.x) < halfW + CONFIG.PLAYER_SIZE / 2;
+  var overlapY = Math.abs((Player.y + CONFIG.PLAYER_SIZE / 2) - e.y) < halfH + CONFIG.PLAYER_SIZE / 2;
+  return overlapX && overlapY;
+};
+Enemy.hitsPlayer = function () { var px = Player.x + CONFIG.PLAYER_SIZE / 2, py = Player.y + CONFIG.PLAYER_SIZE / 2; for (var i = 0; i < Enemy.enemies.length; i++) { var e = Enemy.enemies[i]; if (e.deadTimer > 0 || e.state === "windup") continue; if (e.type === "domino") { if (Enemy.dominoCrushesPlayer(e)) { if (Weapons.parryBodyHit() || Player.invincibilityTimer > 0) continue; return true; } continue; } var dx = px - e.x, dy = py - e.y, reach = e.radius + CONFIG.PLAYER_SIZE / 2; if (dx * dx + dy * dy < reach * reach) { if (Weapons.parryBodyHit() || Player.invincibilityTimer > 0) continue; return true; } } for (var j = Enemy.bullets.length - 1; j >= 0; j--) { var b = Enemy.bullets[j], bx = px - b.x, by = py - b.y; if (bx * bx + by * by < 18 * 18) { if (Weapons.parryProjectile(b) || Player.invincibilityTimer > 0) continue; if (!b.reflected) return true; } } return false; };

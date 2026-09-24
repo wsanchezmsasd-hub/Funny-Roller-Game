@@ -1,6 +1,6 @@
 # ROLLSCAPE
 
-> **WARNING: ROLLSCAPE IS IN PRE-PRE ALPHA.** Expect chaotic bugs, clunky gameplay, and absolute broken physics.
+> **WARNING: ROLLSCAPE IS IN PRE-PRE ALPHA.** Expect chaotic bugs, clunky gameplay, and crappy broken physics.
 
 Welcome to your eternal prison.
 
@@ -18,6 +18,11 @@ Fight for survival in an endless geometric plane. Choose from **4 distinct class
 
 ---
 
+## How to use your class
+* **KATANA** - Short-ranged; you can't fight with this normally. You can, however, PARRY enemies with this.
+* **PISTOLS** - , weak sidearms. E to immediately change direction and dash; grants invincibility while dashing.
+* **AK-47** - Forced into Semi firing, you have no choice but to **THROW** your gun at threats, knocks you back when it comes back.
+* **BAZOOKA** - Hard-hitting missiles that break terrain and fling you far, be careful, ***no*** ability.
 ##  Threat Roster
 
 ### Enemies

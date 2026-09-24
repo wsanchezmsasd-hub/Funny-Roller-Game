@@ -1,25 +1,28 @@
 # ROLLSCAPE
 
-**ROLLSCAPE IS IN PRE-PRE ALPHA, VERY BUGGY, EXPECT CLUNKY GAMEPLAY**
+> **WARNING: ROLLSCAPE IS IN PRE-PRE ALPHA.** Expect chaotic bugs, clunky gameplay, and absolute broken physics.
 
 Welcome to your eternal prison.
 
-Fight for your life in this endless plane. You have 4 classes to choose from to help you survive and escape to the finish. You should also use them to fight back with your weapons to take them down for a moment, but they will always respawn.
-## How to survive
+Fight for survival in an endless geometric plane. Choose from **4 distinct classes** to manipulate the arena, build momentum, and reach the finish. Use your heavy weapons arsenal to blow back the onslaught—they might fall for a moment, but they *always* respawn.
 
-- W / D - roll
-- SPACE or UP arrow - jump
-- M1: use weapon (Bazooka, AK, pistol, Katana)
-- E: use ability (AK, pistol, Katana)
-## ROSTER
-Enemies
-- Green ball 4?
-- Bouncy balls that occasionally jump towards you.
-- Cuboid
-- 3 cubes move towards you; speed is  based on your distance
-- Drill
-- Dashes in your direction; keep out of its way
-- Drone
-- Moves above you, then fires a volley towards you
-- DOMINO
-- Dude...... Copilot locked the hell out with this one
+---
+
+##  How to Survive
+
+*   **A / D** (or **Left / Right**) — Roll / Move
+*   **SPACE** (or **Up Arrow**) — Jump
+*   **MOUSE 1** — Fire Primary Weapon *(Bazooka, AK-47, Pistol, Katana)*
+*   **E** — Activate Class Ability
+*   **R** — Restart Run
+
+---
+
+##  Threat Roster
+
+### Enemies
+*   🟢 **Green Ball (4?)** — Bouncy anomalies that track and launch themselves directly at you.
+*   📦 **Cuboid** — A cluster of 3 trailing cubes tracking your location. Their velocity scales the closer you get.
+*   🔻 **Drill** — Charges and executes high-speed dashes. Keep out of its horizontal path.
+*   🛸 **Drone** — hovers persistently above your position before raining down targeted projectile volleys.
+*   🧱 **DOMINO** — *Dude... dont pick this*

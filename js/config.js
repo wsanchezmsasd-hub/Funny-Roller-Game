@@ -116,7 +116,7 @@ var CONFIG = {
 
   // Collapse timing is measured in frames (60 frames = 1 second).
   COLLAPSE_INTERVAL: 40,
-  COLLAPSE_WARNING_FRAMES: 25,
+  COLLAPSE_WARNING_FRAMES: 50,
 
   // Values used by curses.js. These are deliberately separate from the
   // normal tuning values so a curse can be changed without hunting through

@@ -112,6 +112,7 @@ Level.updateTesseracts = function () {
 
 Level.updateCollapse = function () {
   if (!Level.collapseActive) return;
+  if (Level.collapseWarning > 0) return;
   Level.collapseTimer--;
   if (Level.collapseTimer > 0) return;
   Level.collapseTimer = Game.hasCurse("unstablePlain") ? CONFIG.CURSES.unstablePlain.collapseFrames : CONFIG.COLLAPSE_INTERVAL;

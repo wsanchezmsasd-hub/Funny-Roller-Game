@@ -86,9 +86,15 @@ var CONFIG = {
   DRONE_BURST_COOLDOWN: 130,
   DRONE_FIRE_MOVE_FACTOR: 0.2,
   DRONE_COUNT: 1,
-  DOMINO_WIDTH: 36,
-  DOMINO_HEIGHT: 72,
-  DOMINO_SPEED: 0.7,
+  DOMINO_WIDTH: 90,
+  DOMINO_HEIGHT: 150,
+  DOMINO_JUMP_SPEED: 21,
+  DOMINO_LEAP_RANGE: 220,
+  DOMINO_TELEGRAPH_FRAMES: 32,
+  DOMINO_GROUND_PAUSE_FRAMES: 55,
+  DOMINO_SHOCKWAVE_RADIUS: 170,
+  DOMINO_SHOCKWAVE_FORCE: 24,
+  DOMINO_SHOCKWAVE_LIFE: 22,
   EVIL_SPIKE_WARNING_TIME: 40,
   EVIL_SPIKE_DASH_SPEED: 12,
   EVIL_SPIKE_DASH_TIME: 18,
@@ -116,7 +122,7 @@ var CONFIG = {
 
   // Collapse timing is measured in frames (60 frames = 1 second).
   COLLAPSE_INTERVAL: 40,
-  COLLAPSE_WARNING_FRAMES: 50,
+  COLLAPSE_WARNING_FRAMES: 25,
 
   // Values used by curses.js. These are deliberately separate from the
   // normal tuning values so a curse can be changed without hunting through

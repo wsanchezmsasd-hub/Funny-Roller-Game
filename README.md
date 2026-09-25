@@ -3,8 +3,8 @@
 > **$${\color{red}WARNING: \space ROLLSCAPE \space IS \space IN \space PRE-PRE \space ALPHA.}$$** Expect chaotic bugs, clunky gameplay, and crappy broken physics.
 
 Welcome to your eternal prison.
-You (the ball) have been brought down to ROLLSCAPE as punishment for *countless* war crimes against others using weaponry. You will not come back out.
-Fight for survival in an endless geometric plane. Choose from **4 distinct classes** to manipulate the arena, build momentum, and reach the finish. Use your heavy weapons arsenal to blow back the onslaught—they might fall for a moment, but they *always* respawn.
+You (the ball) have been brought down to ROLLSCAPE as punishment for *countless* war crimes against others using weaponry in previous ROLLER games.
+You will be fighting  for survival in an endless geometric plane. Choose from **4 distinct classes** to manipulate the arena, build momentum, and reach the finish after collecting all RED tessaracts. Use your heavy weapons arsenal to blow back the onslaught—they might fall for a moment, but they *always* respawn.
 
 ---
 
@@ -27,7 +27,7 @@ Fight for survival in an endless geometric plane. Choose from **4 distinct class
 
 ---
 
-## $${\color{purple}Threat \space Roster}$$
+## $${\color{red}Threat \space Roster}$$
 
 ### Enemies
 *   🟢 **Green Ball (4?)** — Bouncy anomalies that track and launch themselves directly at you.

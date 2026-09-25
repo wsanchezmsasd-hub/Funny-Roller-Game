@@ -1,6 +1,6 @@
 # ROLLSCAPE
 
-> **WARNING: ROLLSCAPE IS IN PRE-PRE ALPHA.** Expect chaotic bugs, clunky gameplay, and crappy broken physics.
+> **$${\color{red}WARNING: \space ROLLSCAPE \space IS \space IN \space PRE-PRE \space ALPHA.}$$** Expect chaotic bugs, clunky gameplay, and crappy broken physics.
 
 Welcome to your eternal prison.
 
@@ -8,7 +8,7 @@ Fight for survival in an endless geometric plane. Choose from **4 distinct class
 
 ---
 
-##  How to Survive
+## $${\color{cyan}How \space to \space Survive}$$
 
 *   **A / D** (or **Left / Right**) — Roll / Move
 *   **SPACE** (or **Up Arrow**) — Jump
@@ -18,16 +18,20 @@ Fight for survival in an endless geometric plane. Choose from **4 distinct class
 
 ---
 
-## How to use your class
-* **KATANA** - Short-ranged; you can't fight with this normally. You can, however, PARRY enemies with this.
-* **PISTOLS** - , weak sidearms. E to immediately change direction and dash; grants invincibility while dashing.
-* **AK-47** - Forced into Semi firing, you have no choice but to **THROW** your gun at threats, knocks you back when it comes back.
-* **BAZOOKA** - Hard-hitting missiles that break terrain and fling you far, be careful, ***no*** ability.
-##  Threat Roster
+## $${\color{cyan}How \space to \space use \space your \space class}$$
+
+*   **KATANA** — Short-ranged; you can't fight with this normally. You can, however, $${\color{orange}PARRY}$$ enemies with this.
+*   **PISTOLS** — Weak sidearms. Press **E** to immediately change direction and dash; $${\color{lightgreen}grants \space invincibility}$$ while dashing.
+*   **TOMAHAWK** — Extremely light tomahawks. Throw some boring axes; ability throws multiple at once. *(Note: You cannot use these to make you faster).*
+*   **BAZOOKA** — $${\color{orange}Hard-hitting \space missiles}$$ that break terrain and fling you far; be careful, $${\color{red}no \space ability.}$$
+
+---
+
+## $${\color{purple}Threat \space Roster}$$
 
 ### Enemies
 *   🟢 **Green Ball (4?)** — Bouncy anomalies that track and launch themselves directly at you.
 *   📦 **Cuboid** — A cluster of 3 trailing cubes tracking your location. Their velocity scales the closer you get.
-*   🔻 **Drill** — Charges and executes high-speed dashes. Keep out of its horizontal path.
-*   🛸 **Drone** — hovers persistently above your position before raining down targeted projectile volleys.
-*   🧱 **DOMINO** — *Dude... dont pick this*
+*   🔻 **Drill** — Charges and executes high-speed dashes. $${\color{red}Keep \space out \space of \space its \space horizontal \space path.}$$
+*   🛸 **Drone** — Hovers persistently above your position before raining down targeted projectile volleys.
+*   🧱 **DOMINO** — Launches its own body near your position; $${\color{orange}watch \space out \space for \space its \space warning.}$$

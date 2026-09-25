@@ -3,7 +3,7 @@
 > **$${\color{red}WARNING: \space ROLLSCAPE \space IS \space IN \space PRE-PRE \space ALPHA.}$$** Expect chaotic bugs, clunky gameplay, and crappy broken physics.
 
 Welcome to your eternal prison.
-
+You (the ball) have been brought down to ROLLSCAPE as punishment for *countless* war crimes against others using weaponry. You will not come back out.
 Fight for survival in an endless geometric plane. Choose from **4 distinct classes** to manipulate the arena, build momentum, and reach the finish. Use your heavy weapons arsenal to blow back the onslaught—they might fall for a moment, but they *always* respawn.
 
 ---

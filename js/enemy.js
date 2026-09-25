@@ -79,7 +79,16 @@ Enemy.dominoLand = function (e) {
   }
 };
 Enemy.tryCombineCuboids = function () { var cuboids = Enemy.enemies.filter(function (e) { return e.type === "cuboid" && !e.combined; }); if (cuboids.length < CONFIG.CUOBID_GROUP_SIZE) return; var cx = 0, cy = 0; cuboids.forEach(function (e) { cx += e.x; cy += e.y; }); cx /= cuboids.length; cy /= cuboids.length; if (!cuboids.every(function (e) { return Math.hypot(e.x - cx, e.y - cy) < CONFIG.CUOBID_MERGE_DISTANCE; })) return; Enemy.enemies = Enemy.enemies.filter(function (e) { return e.type !== "cuboid" || e.combined; }); Enemy.enemies.push({ type: "cuboid", x: cx, y: cy, vx: 0, vy: 0, radius: CONFIG.CUOBID_SIZE / 2 * Math.sqrt(cuboids.length), angle: 0, combined: true, state: "approach", deadTimer: 0, hp: Infinity, maxHp: Infinity, respawnFrames: 0 }); };
-Enemy.updateCuboid = function (e) { var dx = Player.x - e.x, dy = Player.y - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1, speed = Math.min(CONFIG.CUOBID_MAX_SPEED, CONFIG.CUOBID_SPEED + distance * CONFIG.CUOBID_DISTANCE_SPEED); e.x += dx / distance * speed + e.vx; e.y += dy / distance * speed + e.vy; e.vx *= 0.97; e.vy *= 0.97; e.angle += 0.025; };
+Enemy.updateCuboid = function (e) {
+  var dx = Player.x - e.x, dy = Player.y - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1;
+  var speedMult = e.combined ? CONFIG.CUOBID_COMBINED_SPEED_MULT : 1;
+  var speed = Math.min(CONFIG.CUOBID_MAX_SPEED * speedMult, (CONFIG.CUOBID_SPEED + distance * CONFIG.CUOBID_DISTANCE_SPEED) * speedMult);
+  e.x += dx / distance * speed + e.vx;
+  e.y += dy / distance * speed + e.vy;
+  e.vx *= CONFIG.CUOBID_KNOCKBACK_DECAY;
+  e.vy *= CONFIG.CUOBID_KNOCKBACK_DECAY;
+  e.angle += 0.025;
+};
 Enemy.updateDrone = function (e) { e.timer++; if (e.fireTimer > 0) e.fireTimer--; var firing = e.burstShots > 0 || e.fireTimer > 0, followRate = firing ? CONFIG.DRONE_FOLLOW_RATE * CONFIG.DRONE_FIRE_MOVE_FACTOR : CONFIG.DRONE_FAST_FOLLOW_RATE; e.x += (Player.x - e.x) * followRate; e.y += (Player.y - CONFIG.DRONE_HEIGHT_ABOVE_PLAYER - e.y) * followRate; e.shotTimer--; if (e.shotTimer <= 0 && e.burstShots > 0) { var dx = Player.x + CONFIG.PLAYER_SIZE / 2 - e.x, dy = Player.y + CONFIG.PLAYER_SIZE / 2 - e.y, distance = Math.sqrt(dx * dx + dy * dy) || 1, bulletSpeed = Game.hasCurse("shotgunSlug") ? CONFIG.CURSES.shotgunSlug.bulletSpeed : CONFIG.DRONE_BULLET_SPEED; Enemy.bullets.push({ x: e.x, y: e.y, vx: dx / distance * bulletSpeed, vy: dy / distance * bulletSpeed, life: CONFIG.DRONE_BULLET_LIFE }); e.burstShots--; e.shotTimer = Game.hasCurse("shotgunSlug") ? CONFIG.DRONE_BURST_COOLDOWN : (e.burstShots ? CONFIG.DRONE_SHOT_INTERVAL : CONFIG.DRONE_BURST_COOLDOWN); } else if (e.shotTimer <= 0 && e.burstShots === 0) { e.burstShots = Game.hasCurse("shotgunSlug") ? 1 : CONFIG.DRONE_SHOTS; e.fireTimer = CONFIG.DRONE_FIRE_TIME; e.shotTimer = 1; } };
 Enemy.updateDrill = function (e) {
   e.timer++;

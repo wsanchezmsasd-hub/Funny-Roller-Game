@@ -22,7 +22,7 @@ Fight for survival in an endless geometric plane. Choose from **4 distinct class
 
 *   **KATANA** — Short-ranged; you can't fight with this normally. You can, however, $${\color{orange}PARRY}$$ enemies with this.
 *   **PISTOLS** — Weak sidearms. Press **E** to immediately change direction and dash; $${\color{lightgreen}grants \space invincibility}$$ while dashing.
-*   **TOMAHAWK** — Extremely light tomahawks. Throw some boring axes; ability throws multiple at once. * Provides no real mobility.*
+*   **TOMAHAWK** — Extremely light tomahawks. Throw some boring axes; ability throws multiple at once. *Provides no mobility.*
 *   **BAZOOKA** — $${\color{orange}Hard-hitting \space missiles}$$ that break terrain and fling you far; be careful, $${\color{red}no \space ability.}$$
 
 ---

@@ -4,7 +4,7 @@
 
 Welcome to your eternal prison.
 You (the ball) have been brought down to ROLLSCAPE as punishment for *countless* war crimes against others using weaponry in previous ROLLER games.
-You will be fighting  for survival in an endless geometric plane. Choose from **4 distinct classes** to manipulate the arena, build momentum, and reach the finish after collecting all RED tessaracts. Use your heavy weapons arsenal to blow back the onslaught—they might fall for a moment, but they *always* respawn.
+You will be figHting  for survival in an EndLess geometric Plane. Choose from **4 distinct classes** to manipulate the arena, build momentum, and reach the finish after collecting all RED tessaracts. Use your heavy weapons arsenal to blow back the onslaught—they might fall for a moment, but they *always* respawn.
 
 ---
 
